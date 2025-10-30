@@ -1,0 +1,6 @@
+{
+    "java.project.sourcePaths": [
+        "src"  // this may be an error (should be src instead), however im keeping this way
+    ],
+    "java.project.referencedLibraries": []
+}
