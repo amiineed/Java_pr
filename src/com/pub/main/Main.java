@@ -16,6 +16,7 @@ public class Main {
 
     private static final Scanner scanner = new Scanner(System.in);
     private static Bar leBar;
+    private static Tournoi tournoiEnCours;
 
     public static void main(String[] args) {
         initialiserBar();
@@ -48,7 +49,7 @@ public class Main {
                     commanderBoisson();
                     break;
                 case 4:
-                    System.out.println("Belote Tournament: Feature not implemented.");
+                    gererTournoi();
                     break;
                 case 5:
                     sauvegarderEtatSimplifie("bar_state.txt");
@@ -224,8 +225,26 @@ public class Main {
                 System.out.println("Favorite drink? (Water, Beer, Rum, Whisky, Gin, Bourbon, Tequila, Tea, Coffee, Orange Juice, Coca-Cola, Mojito, Wine)");
                 String fav = lireStringUtilisateur("Favorite: ");
                 Boisson boissonFav = (leBar != null) ? leBar.trouverBoisson(fav) : null;
-                System.out.println("Gender? (Male <detail>, Female <detail>)");
+                System.out.println("Gender? Format: 'Male <color>' or 'Female <jewelry>'");
+                System.out.println("Examples: 'Male Blue', 'Male Red', 'Female Necklace', 'Female Earrings'");
                 String genreId = lireStringUtilisateur("Gender: ");
+                
+                // Normalize gender format
+                if (genreId != null && !genreId.isEmpty()) {
+                    if (!genreId.toLowerCase().startsWith("male") && !genreId.toLowerCase().startsWith("female") &&
+                        !genreId.toLowerCase().startsWith("homme") && !genreId.toLowerCase().startsWith("femme")) {
+                        // If user didn't specify Male/Female, assume Male with the input as color
+                        genreId = "Male " + genreId;
+                        System.out.println("(Auto-detected as Male with detail: " + genreId + ")");
+                    }
+                    // Normalize Male/Female to Homme/Femme for internal use
+                    if (genreId.toLowerCase().startsWith("male ")) {
+                        genreId = "Homme " + genreId.substring(5);
+                    } else if (genreId.toLowerCase().startsWith("female ")) {
+                        genreId = "Femme " + genreId.substring(7);
+                    }
+                }
+                
                 nouveau = new Client(prenom, surnom, argent, 5, "Hey!", boissonFav, (leBar != null) ? leBar.trouverBoisson("Eau") : null, genreId);
                 if (leBar != null) leBar.ajouterClient((Client) nouveau);
                 break;
@@ -274,6 +293,7 @@ public class Main {
                 System.out.println(String.format("%s: %s (\"%s\")", c.getPrenom(), "Hi! I am " + c.getPrenom() + " called '" + c.getSurnom() + "'.", ""));
                 System.out.println(String.format("%s: Do you like my %s ?", c.getPrenom(), (c.getIdentifiantGenre() != null ? c.getIdentifiantGenre() : "items")));
                 System.out.println(String.format("%s: My favorite drink is %s.", c.getPrenom(), fav));
+                System.out.println(String.format("%s: I have %.2f€ in my wallet.", c.getPrenom(), c.getPorteMonnaie()));
             }
         }
     }
@@ -327,6 +347,158 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Unexpected error: " + e.getMessage());
         }
+    }
+
+    private static void gererTournoi() {
+        if (leBar == null) {
+            System.out.println("Bar not initialized.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("--- GESTION DU TOURNOI DE BELOTE ---");
+        System.out.println("1. Créer un nouveau tournoi");
+        System.out.println("2. Inscrire une équipe");
+        System.out.println("3. Démarrer le tournoi");
+        System.out.println("4. Jouer le prochain match");
+        System.out.println("5. Jouer tout le tournoi");
+        System.out.println("6. Afficher le classement");
+        System.out.println("7. Afficher les équipes inscrites");
+        System.out.println("0. Retour");
+        System.out.print("Votre choix: ");
+
+        int choix = lireChoixUtilisateur(0, 7);
+
+        switch (choix) {
+            case 1:
+                creerTournoi();
+                break;
+            case 2:
+                inscrireEquipeTournoi();
+                break;
+            case 3:
+                demarrerTournoi();
+                break;
+            case 4:
+                jouerProchainMatch();
+                break;
+            case 5:
+                jouerTournoiComplet();
+                break;
+            case 6:
+                afficherClassement();
+                break;
+            case 7:
+                afficherEquipesInscrites();
+                break;
+            case 0:
+                break;
+            default:
+                System.out.println("Choix invalide.");
+                break;
+        }
+    }
+
+    private static void creerTournoi() {
+        if (tournoiEnCours != null && !tournoiEnCours.isTournoiTermine()) {
+            System.out.println("Un tournoi est déjà en cours !");
+            System.out.print("Voulez-vous l'annuler et en créer un nouveau ? (oui/non): ");
+            String reponse = scanner.nextLine().toLowerCase();
+            if (!reponse.equals("oui")) {
+                return;
+            }
+        }
+
+        double frais = lireDoubleUtilisateur("Frais d'inscription par équipe: ");
+        tournoiEnCours = new Tournoi(leBar, frais);
+        tournoiEnCours.ouvrirInscriptions();
+        System.out.println("✓ Tournoi créé avec succès !");
+    }
+
+    private static void inscrireEquipeTournoi() {
+        if (tournoiEnCours == null) {
+            System.out.println("Aucun tournoi en cours. Créez d'abord un tournoi.");
+            return;
+        }
+
+        List<Client> clients = leBar.getClients();
+        if (clients == null || clients.size() < 2) {
+            System.out.println("Pas assez de clients dans le bar pour former une équipe.");
+            return;
+        }
+
+        System.out.println("\n=== Clients disponibles ===");
+        for (int i = 0; i < clients.size(); i++) {
+            Client c = clients.get(i);
+            System.out.println((i + 1) + ". " + c.getPrenom() + " '" + c.getSurnom() + "' (" + c.getPorteMonnaie() + "€)");
+        }
+
+        System.out.print("\nNom de l'équipe: ");
+        String nomEquipe = scanner.nextLine();
+
+        System.out.print("Numéro du premier joueur: ");
+        int idx1 = lireChoixUtilisateur(1, clients.size()) - 1;
+
+        System.out.print("Numéro du deuxième joueur: ");
+        int idx2 = lireChoixUtilisateur(1, clients.size()) - 1;
+
+        if (idx1 == idx2) {
+            System.out.println("Vous devez choisir deux joueurs différents !");
+            return;
+        }
+
+        Client joueur1 = clients.get(idx1);
+        Client joueur2 = clients.get(idx2);
+
+        tournoiEnCours.inscrireEquipe(nomEquipe, joueur1, joueur2);
+    }
+
+    private static void demarrerTournoi() {
+        if (tournoiEnCours == null) {
+            System.out.println("Aucun tournoi en cours.");
+            return;
+        }
+
+        tournoiEnCours.demarrerTournoi();
+    }
+
+    private static void jouerProchainMatch() {
+        if (tournoiEnCours == null) {
+            System.out.println("Aucun tournoi en cours.");
+            return;
+        }
+
+        if (!tournoiEnCours.jouerProchainMatch()) {
+            System.out.println("Tous les matchs ont été joués !");
+        }
+    }
+
+    private static void jouerTournoiComplet() {
+        if (tournoiEnCours == null) {
+            System.out.println("Aucun tournoi en cours.");
+            return;
+        }
+
+        System.out.println("Lancement du tournoi complet...");
+        tournoiEnCours.jouerTournoiComplet();
+    }
+
+    private static void afficherClassement() {
+        if (tournoiEnCours == null) {
+            System.out.println("Aucun tournoi en cours.");
+            return;
+        }
+
+        tournoiEnCours.getFeuilleDeScore().afficherClassement();
+    }
+
+    private static void afficherEquipesInscrites() {
+        if (tournoiEnCours == null) {
+            System.out.println("Aucun tournoi en cours.");
+            return;
+        }
+
+        tournoiEnCours.afficherEquipesInscrites();
     }
 
     private static void sauvegarderEtatSimplifie(String nomFichier) {

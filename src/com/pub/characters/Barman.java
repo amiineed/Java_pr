@@ -21,6 +21,11 @@ public class Barman extends Human {
         this.caisse = caisse;
     }
 
+    // Getter for caisse
+    public Caisse getCaisse() {
+        return caisse;
+    }
+
     // Concept: Method Override (@Override) (Java1.3)
     @Override
     public void sePresenter() {

@@ -42,6 +42,7 @@ public class Client extends Human {
     public Boisson getBoissonFavorite() { return boissonFavorite; }
     public Boisson getBoissonSecondaire() { return boissonSecondaire; }
     public int getNiveauAlcoolemie() { return niveauAlcoolemie; }
+    public String getIdentifiantGenre() { return identifiantGenre; }
     public boolean isHomme() { return this.identifiantGenre != null && this.identifiantGenre.toLowerCase().startsWith("homme"); }
     public String getTeeShirtCouleur() { return identifiantGenre != null && identifiantGenre.startsWith("Homme ") ? identifiantGenre.substring(6) : null; }
     public List<String> getBijoux() { return identifiantGenre != null && identifiantGenre.startsWith("Femme ") ? List.of(identifiantGenre.substring(6).split(",")) : null; }
@@ -75,9 +76,15 @@ public class Client extends Human {
         super.parler("Salut! Je suis " + getPrenom() +
                      (surnom != null && !surnom.isEmpty() ? " dit '" + surnom + "'" : "") + ".");
         if (isHomme()) {
-            super.parler("Regardez mon beau t-shirt " + this.getTeeShirtCouleur() + ".");
+            String couleur = this.getTeeShirtCouleur();
+            if (couleur != null) {
+                super.parler("Regardez mon beau t-shirt " + couleur + ".");
+            }
         } else {
-             super.parler("Vous aimez mes bijoux (" + String.join(", ", this.getBijoux()) + ") ?");
+            List<String> bijoux = this.getBijoux();
+            if (bijoux != null && !bijoux.isEmpty()) {
+                super.parler("Vous aimez mes bijoux (" + String.join(", ", bijoux) + ") ?");
+            }
         }
         if (boissonFavorite != null) {
             super.parler("Ma boisson préférée est " + boissonFavorite.getNom() + ".");

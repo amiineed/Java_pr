@@ -65,6 +65,32 @@ public abstract class Human {
             parler("Merci! J'ai maintenant " + String.format("%.2f", this.porteMonnaie) + " euros.");
         }
     }
+    
+    /**
+     * Dépense de l'argent (version silencieuse de payer).
+     * 
+     * @param montant Le montant à dépenser
+     * @throws NotEnoughMoneyException Si pas assez d'argent
+     */
+    public void depenser(double montant) throws NotEnoughMoneyException {
+        if (this.porteMonnaie >= montant) {
+            this.porteMonnaie -= montant;
+        } else {
+            throw new NotEnoughMoneyException(this.prenom + " n'a pas assez d'argent! Manque " + 
+                                            String.format("%.2f", (montant - this.porteMonnaie)));
+        }
+    }
+    
+    /**
+     * Ajoute de l'argent au porte-monnaie (version silencieuse de recevoir).
+     * 
+     * @param montant Le montant à ajouter
+     */
+    public void ajouterArgent(double montant) {
+        if (montant > 0) {
+            this.porteMonnaie += montant;
+        }
+    }
 
     public void offrirVerre(Human destinataire, Boisson boisson) {
         parler("Tiens " + destinataire.getPrenom() + ", c'est pour moi! Un(e) " + boisson.getNom() + ".");
