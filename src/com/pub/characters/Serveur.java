@@ -1,20 +1,23 @@
 package com.pub.characters;
 
 public class Serveur extends Human {
-
-    private int biceps;
-
-    public Serveur(String prenom, String surnom, double argent, int biceps) {
-        super(prenom, surnom, argent, 10, "Voici votre commande");
-        this.biceps = biceps;
+    private int tailleBiceps;
+    
+    public Serveur(String prenom, String surnom, double porteMonnaie, int tailleBiceps) {
+        super(prenom, surnom, porteMonnaie, 30);
+        this.tailleBiceps = tailleBiceps;
     }
-
-    public int getBiceps() {
-        return biceps;
+    
+    public int getTailleBiceps() {
+        return tailleBiceps;
     }
-
+    
+    public void setTailleBiceps(int tailleBiceps) {
+        this.tailleBiceps = tailleBiceps;
+    }
+    
     @Override
     public void sePresenter() {
-        parler("Je suis " + getPrenom() + ", votre serveur. Admirez mes biceps de " + biceps + " cm!");
+        parler("Bonjour, je suis " + getPrenom() + " '" + getSurnom() + "', serveur avec des biceps de " + tailleBiceps + "cm!");
     }
 }

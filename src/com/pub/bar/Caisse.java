@@ -2,24 +2,31 @@ package com.pub.bar;
 
 public class Caisse {
     private double montantTotal;
-
+    
     public Caisse(double montantInitial) {
-        this.montantTotal = Math.max(0, montantInitial);
+        this.montantTotal = montantInitial;
     }
-
-    public void ajouter(double montant) {
-        if (montant > 0) {
-            montantTotal += montant;
-        }
-    }
-
-    public void retirer(double montant) {
-        if (montant > 0 && montant <= montantTotal) {
-            montantTotal -= montant;
-        }
-    }
-
+    
     public double getMontantTotal() {
         return montantTotal;
+    }
+    
+    public void ajouterMontant(double montant) {
+        if (montant > 0) {
+            this.montantTotal += montant;
+        }
+    }
+    
+    public boolean retirerMontant(double montant) {
+        if (montant > 0 && montant <= this.montantTotal) {
+            this.montantTotal -= montant;
+            return true;
+        }
+        return false;
+    }
+    
+    @Override
+    public String toString() {
+        return "Caisse: " + montantTotal + "€";
     }
 }

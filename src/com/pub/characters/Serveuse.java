@@ -1,20 +1,23 @@
 package com.pub.characters;
 
 public class Serveuse extends Human {
-
-    private int charme;
-
-    public Serveuse(String prenom, String surnom, double argent, int charme) {
-        super(prenom, surnom, argent, 10, "Et voilà pour vous!");
-        this.charme = charme;
+    private int niveauCharme;
+    
+    public Serveuse(String prenom, String surnom, double porteMonnaie, int niveauCharme) {
+        super(prenom, surnom, porteMonnaie, 40);
+        this.niveauCharme = niveauCharme;
     }
-
-    public int getCharme() {
-        return charme;
+    
+    public int getNiveauCharme() {
+        return niveauCharme;
     }
-
+    
+    public void setNiveauCharme(int niveauCharme) {
+        this.niveauCharme = niveauCharme;
+    }
+    
     @Override
     public void sePresenter() {
-        parler("Bonjour, je suis " + getPrenom() + ", votre serveuse. Mon charme est de " + charme + "!");
+        parler("Bonjour, je suis " + getPrenom() + " '" + getSurnom() + "', serveuse avec un charme de niveau " + niveauCharme + "!");
     }
 }
