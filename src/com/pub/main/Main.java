@@ -146,6 +146,7 @@ public class Main {
         try {
             System.out.println("Total humans created: " + Human.getHumanCount());
         } catch (Throwable t) {
+        } catch (NoClassDefFoundError | ExceptionInInitializerError e) {
         }
     }
 
@@ -224,9 +225,12 @@ public class Main {
             case "client":
                 System.out.println("Favorite drink? (Water, Beer, Rum, Whisky, Gin, Bourbon, Tequila, Tea, Coffee, Orange Juice, Coca-Cola, Mojito, Wine)");
                 String fav = lireStringUtilisateur("Favorite: ");
+                String fav = lireStringUtilisateur("Favorite drink: ");
                 Boisson boissonFav = (leBar != null) ? leBar.trouverBoisson(fav) : null;
                 System.out.println("Gender? Format: 'Male <color>' or 'Female <jewelry>'");
                 System.out.println("Examples: 'Male Blue', 'Male Red', 'Female Necklace', 'Female Earrings'");
+                System.out.println("Gender? Format: 'Male <description>' or 'Female <description>'");
+                System.out.println("Examples: 'Male with a blue shirt', 'Female with a necklace'");
                 String genreId = lireStringUtilisateur("Gender: ");
                 
                 // Normalize gender format
@@ -239,13 +243,24 @@ public class Main {
                     }
                     // Normalize Male/Female to Homme/Femme for internal use
                     if (genreId.toLowerCase().startsWith("male ")) {
+                    String lowerGenre = genreId.toLowerCase();
+                    if (lowerGenre.startsWith("male ")) {
                         genreId = "Homme " + genreId.substring(5);
                     } else if (genreId.toLowerCase().startsWith("female ")) {
+                    } else if (lowerGenre.startsWith("female ")) {
                         genreId = "Femme " + genreId.substring(7);
+                    } else if (lowerGenre.equals("male")) {
+                        genreId = "Homme";
+                    } else if (lowerGenre.equals("female")) {
+                        genreId = "Femme";
+                    } else if (!lowerGenre.startsWith("homme") && !lowerGenre.startsWith("femme")) {
+                        genreId = "Homme " + genreId;
+                        System.out.println("(Assuming Male with description: " + genreId + ")");
                     }
                 }
                 
                 nouveau = new Client(prenom, surnom, argent, 5, "Hey!", boissonFav, (leBar != null) ? leBar.trouverBoisson("Eau") : null, genreId);
+                nouveau = new Client(prenom, surnom, argent, 5, "Hey!", boissonFav, (leBar != null) ? leBar.trouverBoisson("Water") : null, genreId);
                 if (leBar != null) leBar.ajouterClient((Client) nouveau);
                 break;
             case "serveur":
@@ -267,6 +282,7 @@ public class Main {
         try {
             System.out.println("Total humans created: " + Human.getHumanCount());
         } catch (Throwable t) {
+        } catch (NoClassDefFoundError | ExceptionInInitializerError e) {
         }
     }
 
@@ -339,7 +355,7 @@ public class Main {
         try {
             barman.servirBoisson(boissonChoisie);
             barman.recevoirPaiement(client, boissonChoisie.getPrixVente());
-            client.boire(boissonChoisie);
+            client.boire(boissonChoisie
             System.out.println(client.getPrenom() + " received and paid for " + boissonChoisie.getNom());
         } catch (OutOfStockException | NotEnoughMoneyException e) {
             System.err.println("Order failed: " + e.getMessage());
