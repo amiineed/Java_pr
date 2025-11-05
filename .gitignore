@@ -1,9 +1,10 @@
-# Compiled class files
+# Compiled Java class files
 *.class
 
-# Build output directory
+# Output folders
 /out/
+/bin/
 
-# IDE files (if you use IntelliJ)
+# IDE files
+.vscode/
 .idea/
-*.iml

@@ -105,17 +105,21 @@ public class Tournoi {
         if (equipe1 != null && equipe2 != null) {
             jouerMatch(equipe1, equipe2);
             
-            // Les équipes gagnantes continuent, les perdantes sont éliminées
-            if (Math.random() > 0.5) { // équipe1 gagne
+            // Jouer une partie complète de Belote
+            PartieDeBelote partie = new PartieDeBelote(equipe1, equipe2);
+            Equipe equipeGagnante = partie.demarrerPartie();
+            
+            // Enregistrer le résultat
+            if (equipeGagnante.equals(equipe1)) {
                 equipe1.enregistrerMatch(true);
                 equipe2.enregistrerMatch(false);
-                matchsEnAttente.add(equipe1);
                 feuilleDeScore.ajouterResultat(equipe1.getNom() + " bat " + equipe2.getNom());
-            } else { // équipe2 gagne
+                matchsEnAttente.add(equipe1); // Winner advances
+            } else {
                 equipe1.enregistrerMatch(false);
                 equipe2.enregistrerMatch(true);
-                matchsEnAttente.add(equipe2);
                 feuilleDeScore.ajouterResultat(equipe2.getNom() + " bat " + equipe1.getNom());
+                matchsEnAttente.add(equipe2); // Winner advances
             }
         }
         
@@ -125,13 +129,6 @@ public class Tournoi {
     private void jouerMatch(Equipe equipe1, Equipe equipe2) {
         System.out.println("\n=== MATCH: " + equipe1.getNom() + " vs " + equipe2.getNom() + " ===");
         System.out.println("Les joueurs s'affrontent à la Belote...");
-        
-        // Simuler un délai pour le match
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
     
     public void jouerTournoiComplet() {

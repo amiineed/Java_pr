@@ -1,0 +1,43 @@
+1
+client
+Marie
+La Reine
+50
+Beer
+Femme avec une robe rouge
+1
+client
+Jacques
+Le Fou
+60
+Whisky
+Homme avec un chapeau
+1
+client
+Sophie
+La Douce
+55
+Wine
+Femme avec des lunettes
+1
+client
+Thomas
+Le Sage
+70
+Rum
+Homme avec une barbe
+4
+1
+5
+2
+Les Champions
+1
+3
+2
+Les Gagnants
+2
+4
+3
+4
+0
+0
