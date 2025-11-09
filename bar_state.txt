@@ -1,9 +1,0 @@
-State of bar: Chez Sarah
-Cash: 140.0
---- Clients ---
-Peter;40.0;0.0
-Julie;30.0;0.0
-amine;95.0;0.0
-hamza;85.0;0.0
-wahb;100.0;0.0
-akram;90.0;0.0
