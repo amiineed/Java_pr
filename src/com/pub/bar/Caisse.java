@@ -25,8 +25,12 @@ public class Caisse {
         return false;
     }
     
+    public void setMontantTotal(double montant) {
+        this.montantTotal = montant;
+    }
+    
     @Override
     public String toString() {
-        return "Caisse: " + montantTotal + "€";
+        return "Caisse: " + montantTotal + " euros";
     }
 }

@@ -36,7 +36,7 @@ public class Main {
         int choix;
         do {
             afficherMenuPrincipal();
-            choix = lireChoixUtilisateur(0, 9);
+            choix = lireChoixUtilisateur(0, 7);
 
             switch (choix) {
                 case 1:
@@ -52,9 +52,12 @@ public class Main {
                     gererTournoi();
                     break;
                 case 5:
-                    sauvegarderEtatSimplifie("bar_state.txt");
+                    afficherStatistiquesJoueur();
                     break;
                 case 6:
+                    sauvegarderEtatSimplifie("bar_state.txt");
+                    break;
+                case 7:
                     chargerEtatSimplifie("bar_state.txt");
                     break;
                 case 0:
@@ -66,7 +69,9 @@ public class Main {
             }
         } while (choix != 0);
 
-        scanner.close();
+        // NOTE: Ne JAMAIS fermer le Scanner lié à System.in, car cela ferme le flux définitivement
+        // scanner.close(); // ❌ SUPPRIMÉ - cause NoSuchElementException
+        System.out.println("\nMerci d'avoir utilisé l'application. À bientôt !");
     }
 
     private static void initialiserBar() {
@@ -135,8 +140,8 @@ public class Main {
             leBar.ajouterConsommation(wine);
         }
 
-        Client client1 = new Client("Peter", "The Shy", 40.0, 6, "Oh!", water, beer, "Man Blue");
-        Client client2 = new Client("Julie", "The Talkative", 30.0, 8, "Ah!", beer, water, "Woman Necklace");
+        Client client1 = new Client("Peter", "The Shy", 40.0, 6, "Oh!", water, beer, "Blue", "homme");
+        Client client2 = new Client("Julie", "The Talkative", 30.0, 8, "Ah!", beer, water, "Necklace", "femme");
         if (leBar != null) {
             leBar.ajouterClient(client1);
             leBar.ajouterClient(client2);
@@ -157,8 +162,9 @@ public class Main {
         System.out.println("2. List personas");
         System.out.println("3. Order a drink");
         System.out.println("4. Manage Belote Tournament");
-        System.out.println("5. Save state (simplified)");
-        System.out.println("6. Load state (simplified)");
+        System.out.println("5. View player statistics");
+        System.out.println("6. Save state (simplified)");
+        System.out.println("7. Load state (simplified)");
         System.out.println("0. Exit");
         System.out.print("Your choice: ");
     }
@@ -226,42 +232,36 @@ public class Main {
                 System.out.println("Favorite drink? (Water, Beer, Rum, Whisky, Gin, Bourbon, Tequila, Tea, Coffee, Orange Juice, Coca-Cola, Mojito, Wine)");
                 String fav = lireStringUtilisateur("Favorite drink: ");
                 Boisson boissonFav = (leBar != null) ? leBar.trouverBoisson(fav) : null;
-                System.out.println("Gender? Format: 'Male <description>' or 'Female <description>'");
-                System.out.println("Examples: 'Male with a blue shirt', 'Female with a necklace'");
-                String genreId = lireStringUtilisateur("Gender: ");
                 
-                // Normalize gender format
-                if (genreId != null && !genreId.isEmpty()) {
-                    String lowerGenre = genreId.toLowerCase();
-                    if (!lowerGenre.startsWith("male") && !lowerGenre.startsWith("female") &&
-                        !lowerGenre.startsWith("homme") && !lowerGenre.startsWith("femme")) {
-                        // If user didn't specify Male/Female, assume Male with the input as description
-                        genreId = "Male " + genreId;
-                        System.out.println("(Auto-detected as Male with detail: " + genreId + ")");
-                        lowerGenre = genreId.toLowerCase();
+                // Gender selection with validation
+                String sexe;
+                do {
+                    sexe = lireStringUtilisateur("Genre (Homme/Femme): ").toLowerCase();
+                    if (!sexe.equals("homme") && !sexe.equals("femme")) {
+                        System.out.println("Veuillez entrer 'Homme' ou 'Femme'.");
                     }
-                    // Normalize Male/Female to Homme/Femme for internal use
-                    if (lowerGenre.startsWith("male ")) {
-                        genreId = "Homme " + genreId.substring(5);
-                    } else if (lowerGenre.startsWith("female ")) {
-                        genreId = "Femme " + genreId.substring(7);
-                    } else if (lowerGenre.equals("male")) {
-                        genreId = "Homme";
-                    } else if (lowerGenre.equals("female")) {
-                        genreId = "Femme";
-                    }
+                } while (!sexe.equals("homme") && !sexe.equals("femme"));
+                
+                // Ask for appropriate accessory based on gender
+                String identifiantGenre;
+                if (sexe.equals("homme")) {
+                    identifiantGenre = lireStringUtilisateur("Couleur du tee-shirt: ");
+                } else {
+                    identifiantGenre = lireStringUtilisateur("Bijoux: ");
                 }
                 
-                nouveau = new Client(prenom, surnom, argent, 5, "Hey!", boissonFav, (leBar != null) ? leBar.trouverBoisson("Water") : null, genreId);
+                nouveau = new Client(prenom, surnom, argent, 5, "Hey!", boissonFav, (leBar != null) ? leBar.trouverBoisson("Water") : null, identifiantGenre, sexe);
                 if (leBar != null) leBar.ajouterClient((Client) nouveau);
                 break;
             case "serveur":
-                int biceps = (int) lireDoubleUtilisateur("Biceps size: ");
+            case "server":
+                int biceps = (int) lireDoubleUtilisateur("Taille du biceps (en cm): ");
                 nouveau = new Serveur(prenom, surnom, argent, biceps);
                 if (leBar != null) leBar.ajouterPersonnel(nouveau);
                 break;
             case "serveuse":
-                int charme = (int) lireDoubleUtilisateur("Charme level: ");
+            case "waitress":
+                int charme = (int) lireDoubleUtilisateur("Niveau de charme (sur 10): ");
                 nouveau = new Serveuse(prenom, surnom, argent, charme);
                 if (leBar != null) leBar.ajouterPersonnel(nouveau);
                 break;
@@ -301,7 +301,7 @@ public class Main {
                 System.out.println(String.format("%s: %s (\"%s\")", c.getPrenom(), "Hi! I am " + c.getPrenom() + " called '" + c.getSurnom() + "'.", ""));
                 System.out.println(String.format("%s: Do you like my %s ?", c.getPrenom(), (c.getIdentifiantGenre() != null ? c.getIdentifiantGenre() : "items")));
                 System.out.println(String.format("%s: My favorite drink is %s.", c.getPrenom(), fav));
-                System.out.println(String.format("%s: I have %.2f€ in my wallet.", c.getPrenom(), c.getPorteMonnaie()));
+                System.out.println(String.format("%s: I have %.2f euros in my wallet.", c.getPrenom(), c.getPorteMonnaie()));
             }
         }
     }
@@ -420,7 +420,7 @@ public class Main {
         double frais = lireDoubleUtilisateur("Frais d'inscription par équipe: ");
         tournoiEnCours = new Tournoi(leBar, frais);
         tournoiEnCours.ouvrirInscriptions();
-        System.out.println("✓ Tournoi créé avec succès !");
+        System.out.println("» Tournoi créé avec succès !");
     }
 
     private static void inscrireEquipeTournoi() {
@@ -429,35 +429,54 @@ public class Main {
             return;
         }
 
-        List<Client> clients = leBar.getClients();
-        if (clients == null || clients.size() < 2) {
-            System.out.println("Pas assez de clients dans le bar pour former une équipe.");
+        // Créer une liste de tous les joueurs disponibles (Clients + Serveurs/Serveuses)
+        List<Human> joueursDisponibles = new ArrayList<>();
+        
+        // Ajouter les clients
+        if (leBar.getClients() != null) {
+            joueursDisponibles.addAll(leBar.getClients());
+        }
+        
+        // Ajouter le personnel qui peut jouer (Serveur/Serveuse, mais pas Barman/Patronne)
+        if (leBar.getPersonnel() != null) {
+            for (Human personnel : leBar.getPersonnel()) {
+                if (personnel instanceof com.pub.game.JoueurBelote) {
+                    joueursDisponibles.add(personnel);
+                }
+            }
+        }
+        
+        if (joueursDisponibles.size() < 2) {
+            System.out.println("Pas assez de joueurs disponibles pour former une équipe.");
             return;
         }
 
-        System.out.println("\n=== Clients disponibles ===");
-        for (int i = 0; i < clients.size(); i++) {
-            Client c = clients.get(i);
-            System.out.println((i + 1) + ". " + c.getPrenom() + " '" + c.getSurnom() + "' (" + c.getPorteMonnaie() + "€)");
+        System.out.println("\n=== Joueurs disponibles ===");
+        for (int i = 0; i < joueursDisponibles.size(); i++) {
+            Human joueur = joueursDisponibles.get(i);
+            String type = joueur.getClass().getSimpleName();
+            System.out.println((i + 1) + ". " + joueur.getPrenom() + " '" + joueur.getSurnom() + 
+                             "' [" + type + "] (" + String.format("%.2f", joueur.getPorteMonnaie()) + " euros)");
         }
 
         System.out.print("\nNom de l'équipe: ");
         String nomEquipe = scanner.nextLine();
 
         System.out.print("Numéro du premier joueur: ");
-        int idx1 = lireChoixUtilisateur(1, clients.size()) - 1;
+        int idx1 = lireChoixUtilisateur(1, joueursDisponibles.size()) - 1;
 
         System.out.print("Numéro du deuxième joueur: ");
-        int idx2 = lireChoixUtilisateur(1, clients.size()) - 1;
+        int idx2 = lireChoixUtilisateur(1, joueursDisponibles.size()) - 1;
 
         if (idx1 == idx2) {
             System.out.println("Vous devez choisir deux joueurs différents !");
             return;
         }
 
-        Client joueur1 = clients.get(idx1);
-        Client joueur2 = clients.get(idx2);
+        Human joueur1 = joueursDisponibles.get(idx1);
+        Human joueur2 = joueursDisponibles.get(idx2);
 
+        // Laisser Tournoi.inscrireEquipe() gérer toutes les validations dans le bon ordre
         tournoiEnCours.inscrireEquipe(nomEquipe, joueur1, joueur2);
     }
 
@@ -475,9 +494,18 @@ public class Main {
             System.out.println("Aucun tournoi en cours.");
             return;
         }
-
-        if (!tournoiEnCours.jouerProchainMatch()) {
-            System.out.println("Tous les matchs ont été joués !");
+        
+        // Demander si l'utilisateur veut jouer manuellement
+        System.out.println("\nVoulez-vous participer à ce match manuellement ?");
+        System.out.print("Entrez votre prénom (ou appuyez sur Entrée pour simulation IA): ");
+        String nomJoueur = scanner.nextLine().trim();
+        
+        if (nomJoueur.isEmpty()) {
+            nomJoueur = null; // Mode simulation
+        }
+        
+        if (!tournoiEnCours.jouerProchainMatch(nomJoueur)) {
+            // Message déjà affiché par la méthode
         }
     }
 
@@ -488,7 +516,11 @@ public class Main {
         }
 
         System.out.println("Lancement du tournoi complet...");
-        tournoiEnCours.jouerTournoiComplet();
+        try {
+            tournoiEnCours.jouerTournoiComplet();
+        } catch (TournoiException e) {
+            System.out.println("❌ Erreur: " + e.getMessage());
+        }
     }
 
     private static void afficherClassement() {
@@ -539,20 +571,161 @@ public class Main {
     }
 
     private static void chargerEtatSimplifie(String nomFichier) {
+        if (leBar == null) {
+            System.out.println("Bar not initialized. Cannot load state.");
+            return;
+        }
+        
         File file = new File(nomFichier);
-        Scanner fileScanner = null;
-        try {
-            fileScanner = new Scanner(file);
-            System.out.println("Loading state from " + nomFichier);
+        try (Scanner fileScanner = new Scanner(file)) {
+            System.out.println("Loading state from " + nomFichier + "...");
+            
+            int clientsLoaded = 0;
+            boolean cashUpdated = false;
+            
             while (fileScanner.hasNextLine()) {
-                String line = fileScanner.nextLine();
-                System.out.println("Read: " + line);
+                String line = fileScanner.nextLine().trim();
+                
+                // Skip empty lines
+                if (line.isEmpty()) {
+                    continue;
+                }
+                
+                // Parse and update cash
+                if (line.startsWith("Cash: ")) {
+                    String cashValue = line.substring(6).trim();
+                    if (!cashValue.equals("N/A")) {
+                        try {
+                            double montant = Double.parseDouble(cashValue);
+                            if (leBar.getBarman() != null && leBar.getBarman().getCaisse() != null) {
+                                leBar.getBarman().getCaisse().setMontantTotal(montant);
+                                cashUpdated = true;
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("⚠️ Cannot parse cash value: " + cashValue);
+                        }
+                    }
+                    continue;
+                }
+                
+                // Skip header lines
+                if (line.startsWith("State of bar:") || line.startsWith("--- Clients ---")) {
+                    continue;
+                }
+                
+                // Parse client line (format: prenom;porteMonnaie;niveauAlcoolemie)
+                if (line.contains(";")) {
+                    String[] data = line.split(";");
+                    if (data.length >= 3) {
+                        try {
+                            String prenom = data[0].trim();
+                            double porteMonnaie = Double.parseDouble(data[1].trim());
+                            double niveauAlcoolemie = Double.parseDouble(data[2].trim());
+                            
+                            // Find existing client or create new one
+                            Client client = leBar.trouverClient(prenom);
+                            
+                            if (client != null) {
+                                // Update existing client
+                                client.setPorteMonnaie(porteMonnaie);
+                                client.setNiveauAlcoolemie(niveauAlcoolemie);
+                            } else {
+                                // Create new client with default values
+                                Client nouveauClient = new Client(
+                                    prenom,
+                                    "Loaded",  // surnom
+                                    porteMonnaie,
+                                    5,  // popularite
+                                    "Hello!",  // criSignificatif
+                                    null,  // boissonFavorite
+                                    null,  // boissonActuelle
+                                    "",    // identifiantGenre
+                                    ""     // genre
+                                );
+                                nouveauClient.setNiveauAlcoolemie(niveauAlcoolemie);
+                                leBar.ajouterClient(nouveauClient);
+                            }
+                            clientsLoaded++;
+                        } catch (NumberFormatException e) {
+                            System.out.println("⚠️ Cannot parse client data: " + line);
+                        }
+                    }
+                }
             }
-            System.out.println("Load complete (read-only demo).");
+            
+            System.out.println("» État du bar chargé avec succès.");
+            if (cashUpdated) {
+                System.out.println("  • Caisse mise à jour");
+            }
+            if (clientsLoaded > 0) {
+                System.out.println("  • " + clientsLoaded + " client(s) chargé(s)");
+            }
+            
         } catch (FileNotFoundException e) {
             System.err.println("Save file not found: " + e.getMessage());
-        } finally {
-            if (fileScanner != null) fileScanner.close();
+        }
+    }
+    
+    private static void afficherStatistiquesJoueur() {
+        if (leBar == null) {
+            System.out.println("Bar not initialized.");
+            return;
+        }
+        
+        // Créer une liste de tous les joueurs disponibles (Clients + Serveurs/Serveuses)
+        List<Human> joueursDisponibles = new ArrayList<>();
+        
+        // Ajouter les clients
+        if (leBar.getClients() != null) {
+            joueursDisponibles.addAll(leBar.getClients());
+        }
+        
+        // Ajouter le personnel qui peut jouer (Serveur/Serveuse, mais pas Barman/Patronne)
+        if (leBar.getPersonnel() != null) {
+            for (Human personnel : leBar.getPersonnel()) {
+                if (personnel instanceof com.pub.game.JoueurBelote) {
+                    joueursDisponibles.add(personnel);
+                }
+            }
+        }
+        
+        if (joueursDisponibles.isEmpty()) {
+            System.out.println("No players available.");
+            return;
+        }
+        
+        System.out.println();
+        System.out.println("=== Available Players ===");
+        for (int i = 0; i < joueursDisponibles.size(); i++) {
+            Human joueur = joueursDisponibles.get(i);
+            String type = joueur.getClass().getSimpleName();
+            System.out.println((i + 1) + ". " + joueur.getPrenom() + " '" + joueur.getSurnom() + "' [" + type + "]");
+        }
+        
+        System.out.print("\nSelect a player (1-" + joueursDisponibles.size() + ") or 0 to cancel: ");
+        int choix = lireChoixUtilisateur(0, joueursDisponibles.size());
+        
+        if (choix == 0) {
+            return;
+        }
+        
+        Human joueur = joueursDisponibles.get(choix - 1);
+        
+        // Afficher les statistiques (uniquement disponibles pour les Clients)
+        if (joueur instanceof Client) {
+            System.out.println(((Client) joueur).getStatistiquesDetailles());
+        } else {
+            // Pour Serveur/Serveuse, afficher les statistiques de tournoi de base
+            System.out.println("\n=== Statistiques de " + joueur.getPrenom() + " ===");
+            System.out.println("Type: " + joueur.getClass().getSimpleName());
+            System.out.println("Surnom: " + joueur.getSurnom());
+            System.out.println("Porte-monnaie: " + String.format("%.2f", joueur.getPorteMonnaie()) + " euros");
+            System.out.println("Popularité: " + joueur.getPopularite());
+            System.out.println("\n--- Statistiques de tournoi ---");
+            System.out.println("Matchs joués: " + joueur.getMatchsTournoiJoues());
+            System.out.println("Matchs gagnés: " + joueur.getMatchsTournoiGagnes());
+            System.out.println("Matchs perdus: " + joueur.getMatchsTournoiPerdus());
+            System.out.println("Points tournoi: " + joueur.getPointsTournoi());
         }
     }
 }

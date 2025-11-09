@@ -18,6 +18,6 @@ public class BoissonAlcoolisee extends Boisson {
     
     @Override
     public String toString() {
-        return getNom() + " (" + getPrixVente() + "€, " + degreAlcool + "°)";
+        return getNom() + " (" + getPrixVente() + " euros, " + degreAlcool + "°)";
     }
 }

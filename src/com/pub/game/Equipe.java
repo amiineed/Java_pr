@@ -1,17 +1,17 @@
 package com.pub.game;
 
-import com.pub.characters.Client;
+import com.pub.characters.Human;
 
 public class Equipe {
     private String nom;
-    private Client joueur1;
-    private Client joueur2;
+    private Human joueur1;
+    private Human joueur2;
     private int points;
     private int matchsJoues;
     private int matchsGagnes;
     private int matchsPerdus;
     
-    public Equipe(String nom, Client joueur1, Client joueur2) {
+    public Equipe(String nom, Human joueur1, Human joueur2) {
         this.nom = nom;
         this.joueur1 = joueur1;
         this.joueur2 = joueur2;
@@ -25,11 +25,11 @@ public class Equipe {
         return nom;
     }
     
-    public Client getJoueur1() {
+    public Human getJoueur1() {
         return joueur1;
     }
     
-    public Client getJoueur2() {
+    public Human getJoueur2() {
         return joueur2;
     }
     

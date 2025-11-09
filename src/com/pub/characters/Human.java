@@ -8,11 +8,21 @@ public class Human {
     private double porteMonnaie;
     private int popularite;
     
+    // Statistiques de tournoi (communes à tous les humains)
+    protected int matchsTournoiJoues;
+    protected int matchsTournoiGagnes;
+    protected int matchsTournoiPerdus;
+    protected int pointsTournoi;
+    
     public Human(String prenom, String surnom, double porteMonnaie, int popularite) {
         this.prenom = prenom;
         this.surnom = surnom;
         this.porteMonnaie = porteMonnaie;
         this.popularite = popularite;
+        this.matchsTournoiJoues = 0;
+        this.matchsTournoiGagnes = 0;
+        this.matchsTournoiPerdus = 0;
+        this.pointsTournoi = 0;
         humanCount++;
     }
     
@@ -71,6 +81,39 @@ public class Human {
     public void recevoirArgent(double montant) {
         if (montant > 0) {
             porteMonnaie += montant;
+        }
+    }
+    
+    // Méthodes pour les statistiques de tournoi
+    public int getMatchsTournoiJoues() {
+        return matchsTournoiJoues;
+    }
+    
+    public int getMatchsTournoiGagnes() {
+        return matchsTournoiGagnes;
+    }
+    
+    public int getMatchsTournoiPerdus() {
+        return matchsTournoiPerdus;
+    }
+    
+    public int getPointsTournoi() {
+        return pointsTournoi;
+    }
+    
+    /**
+     * Enregistre le résultat d'un match de tournoi pour ce joueur.
+     * Met à jour les statistiques individuelles (matchs joués, victoires, défaites, points).
+     * 
+     * @param victoire true si le joueur a gagné le match, false sinon
+     */
+    public void enregistrerMatchTournoi(boolean victoire) {
+        this.matchsTournoiJoues++;
+        if (victoire) {
+            this.matchsTournoiGagnes++;
+            this.pointsTournoi += 3; // 3 points pour une victoire
+        } else {
+            this.matchsTournoiPerdus++;
         }
     }
 }

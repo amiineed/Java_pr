@@ -1,6 +1,6 @@
 package com.pub.game;
 
-import com.pub.characters.Client;
+import com.pub.characters.Human;
 import java.util.*;
 
 public class PartieDeBelote {
@@ -19,18 +19,91 @@ public class PartieDeBelote {
     private List<Carte> mainJoueur4; // équipe2.joueur2
     
     // Ordre des joueurs (0-3)
-    private Client[] joueurs;
+    private Human[] joueurs;
     private int joueurActuel;
     
+    // Système d'annonces
+    private Map<Integer, List<Annonce>> annoncesParEquipe; // 0 = equipe1, 1 = equipe2
+    private boolean annoncesValidees;
+    private int pliActuel;
+    private int preneurIndex;
+    private Carte[] cartesPliActuel; // Cartes du pli en cours
+    private int nombreCartesJouees; // Nombre de cartes jouées dans le pli actuel
+    
+    // Mode de jeu
+    private boolean modeInteractif; // true si un joueur humain participe
+    private String nomJoueurHumain; // Nom du joueur humain (pour vérification)
+    
+    /**
+     * Classe interne représentant une annonce
+     */
+    private static class Annonce {
+        enum TypeAnnonce {
+            TIERCE(20, "Tierce"),
+            CINQUANTE(50, "50 (Quarte)"),
+            CENT(100, "100 (Quinte)"),
+            CARRE_VALETS(200, "Carré de Valets"),
+            CARRE_NEUF(150, "Carré de 9"),
+            CARRE_AS(100, "Carré d'As"),
+            CARRE_DIX(100, "Carré de 10"),
+            CARRE_ROIS(100, "Carré de Rois"),
+            CARRE_DAMES(100, "Carré de Dames"),
+            BELOTE_REBELOTE(20, "Belote et Rebelote");
+            
+            final int points;
+            final String nom;
+            
+            TypeAnnonce(int points, String nom) {
+                this.points = points;
+                this.nom = nom;
+            }
+        }
+        
+        TypeAnnonce type;
+        List<Carte> cartes;
+        int joueurIndex;
+        
+        Annonce(TypeAnnonce type, List<Carte> cartes, int joueurIndex) {
+            this.type = type;
+            this.cartes = cartes;
+            this.joueurIndex = joueurIndex;
+        }
+        
+        int getPoints() {
+            return type.points;
+        }
+        
+        @Override
+        public String toString() {
+            return type.nom + " (" + type.points + " pts)";
+        }
+    }
+    
+    /**
+     * Constructeur pour une partie en mode simulation (IA uniquement)
+     */
     public PartieDeBelote(Equipe equipe1, Equipe equipe2) {
+        this(equipe1, equipe2, false, null);
+    }
+    
+    /**
+     * Constructeur pour une partie avec choix du mode
+     * @param equipe1 Première équipe
+     * @param equipe2 Deuxième équipe
+     * @param modeInteractif true si un joueur humain participe
+     * @param nomJoueurHumain Nom du joueur humain (peut être null en mode simulation)
+     */
+    public PartieDeBelote(Equipe equipe1, Equipe equipe2, boolean modeInteractif, String nomJoueurHumain) {
         this.equipe1 = equipe1;
         this.equipe2 = equipe2;
         this.scoreEquipe1 = 0;
         this.scoreEquipe2 = 0;
         this.scanner = new Scanner(System.in);
+        this.modeInteractif = modeInteractif;
+        this.nomJoueurHumain = nomJoueurHumain;
         
         // Initialiser l'ordre des joueurs (alternance entre équipes)
-        this.joueurs = new Client[4];
+        this.joueurs = new Human[4];
         this.joueurs[0] = equipe1.getJoueur1();
         this.joueurs[1] = equipe2.getJoueur1();
         this.joueurs[2] = equipe1.getJoueur2();
@@ -40,6 +113,14 @@ public class PartieDeBelote {
         this.mainJoueur2 = new ArrayList<>();
         this.mainJoueur3 = new ArrayList<>();
         this.mainJoueur4 = new ArrayList<>();
+        
+        this.annoncesParEquipe = new HashMap<>();
+        this.annoncesParEquipe.put(0, new ArrayList<>());
+        this.annoncesParEquipe.put(1, new ArrayList<>());
+        this.annoncesValidees = false;
+        this.pliActuel = 0;
+        this.cartesPliActuel = new Carte[4];
+        this.nombreCartesJouees = 0;
     }
     
     /**
@@ -79,7 +160,7 @@ public class PartieDeBelote {
         System.out.println("╚═══════════════════════════════════════════════════════════╝");
         System.out.println("Score final - " + equipe1.getNom() + ": " + scoreEquipe1);
         System.out.println("            - " + equipe2.getNom() + ": " + scoreEquipe2);
-        System.out.println("\n🏆 VAINQUEUR: " + gagnante.getNom() + " 🏆\n");
+        System.out.println("\n» VAINQUEUR: " + gagnante.getNom() + " «\n");
         
         return gagnante;
     }
@@ -132,10 +213,17 @@ public class PartieDeBelote {
         
         // Ajouter la carte retournée au preneur
         distribuerCarteSpecifique(preneur, carteRetournee);
+        preneurIndex = preneur;
+        
+        // 6bis. Détecter les annonces après la distribution complète
+        detecterAnnonces();
+        afficherAnnonces();
         
         // 7. Jouer les 8 plis
         int[] pointsPlis = new int[2]; // [equipe1, equipe2]
         int dernierGagnant = joueurActuel;
+        annoncesValidees = false;
+        pliActuel = 0; // Réinitialiser le compteur de plis
         
         for (int pli = 1; pli <= 8; pli++) {
             System.out.println("\n" + "-".repeat(40));
@@ -155,7 +243,7 @@ public class PartieDeBelote {
                 pointsPlis[1] += pointsPli;
             }
             
-            System.out.println("→ " + joueurs[gagnantPli].getPrenom() + " remporte le pli (" + pointsPli + " points)");
+            System.out.println("» " + joueurs[gagnantPli].getPrenom() + " remporte le pli (" + pointsPli + " points)");
         }
         
         // 8. Ajouter le "10 de der" (10 points pour le dernier pli)
@@ -179,7 +267,7 @@ public class PartieDeBelote {
             if (pointsPlis[0] >= 82) {
                 scoreEquipe1 += pointsPlis[0];
                 scoreEquipe2 += pointsPlis[1];
-                System.out.println("✓ " + equipe1.getNom() + " a réussi son contrat!");
+                System.out.println("» " + equipe1.getNom() + " a réussi son contrat!");
             } else {
                 scoreEquipe2 += 162; // L'équipe adverse prend tous les points
                 System.out.println("✗ " + equipe1.getNom() + " a chuté! " + equipe2.getNom() + " prend 162 points!");
@@ -188,7 +276,7 @@ public class PartieDeBelote {
             if (pointsPlis[1] >= 82) {
                 scoreEquipe1 += pointsPlis[0];
                 scoreEquipe2 += pointsPlis[1];
-                System.out.println("✓ " + equipe2.getNom() + " a réussi son contrat!");
+                System.out.println("» " + equipe2.getNom() + " a réussi son contrat!");
             } else {
                 scoreEquipe1 += 162; // L'équipe adverse prend tous les points
                 System.out.println("✗ " + equipe2.getNom() + " a chuté! " + equipe1.getNom() + " prend 162 points!");
@@ -207,13 +295,18 @@ public class PartieDeBelote {
         // Premier tour: on propose la couleur de la carte retournée
         for (int i = 0; i < 4; i++) {
             int joueurIndex = (joueurActuel + i) % 4;
-            Client joueur = joueurs[joueurIndex];
+            Human joueur = joueurs[joueurIndex];
             
             System.out.println("\n" + joueur.getPrenom() + ", prenez-vous l'atout " + carteRetournee.getCouleur().name() + " ?");
             
-            if (joueur == joueurs[0]) {
+            // Vérifier si ce joueur est le joueur humain en mode interactif
+            boolean estJoueurHumain = modeInteractif && nomJoueurHumain != null && 
+                                     joueur.getPrenom().equalsIgnoreCase(nomJoueurHumain);
+            
+            if (estJoueurHumain) {
                 // Joueur humain
-                afficherMain(mainJoueur1);
+                List<Carte> mainJoueur = getMainJoueur(joueurIndex);
+                afficherMain(mainJoueur);
                 System.out.print("Votre choix (oui/non): ");
                 String reponse = scanner.nextLine().trim().toLowerCase();
                 
@@ -222,8 +315,8 @@ public class PartieDeBelote {
                     return joueurIndex;
                 }
             } else {
-                // IA simple: prend au hasard avec 30% de chance
-                if (Math.random() < 0.3) {
+                // IA simple: prend au hasard avec 25% de chance
+                if (enchereIA(true)) {
                     System.out.println(joueur.getPrenom() + " prend!");
                     atout = carteRetournee.getCouleur();
                     return joueurIndex;
@@ -238,13 +331,18 @@ public class PartieDeBelote {
         
         for (int i = 0; i < 4; i++) {
             int joueurIndex = (joueurActuel + i) % 4;
-            Client joueur = joueurs[joueurIndex];
+            Human joueur = joueurs[joueurIndex];
             
             System.out.println("\n" + joueur.getPrenom() + ", prenez-vous un atout ?");
             
-            if (joueur == joueurs[0]) {
+            // Vérifier si ce joueur est le joueur humain en mode interactif
+            boolean estJoueurHumain = modeInteractif && nomJoueurHumain != null && 
+                                     joueur.getPrenom().equalsIgnoreCase(nomJoueurHumain);
+            
+            if (estJoueurHumain) {
                 // Joueur humain
-                afficherMain(mainJoueur1);
+                List<Carte> mainJoueur = getMainJoueur(joueurIndex);
+                afficherMain(mainJoueur);
                 System.out.print("Voulez-vous prendre ? (oui/non): ");
                 String reponse = scanner.nextLine().trim().toLowerCase();
                 
@@ -263,9 +361,9 @@ public class PartieDeBelote {
                 }
             } else {
                 // IA simple: prend au hasard avec 20% de chance
-                if (Math.random() < 0.2) {
+                if (enchereIA(false)) {
                     System.out.println(joueur.getPrenom() + " prend!");
-                    atout = Couleur.values()[(int) (Math.random() * 4)];
+                    atout = choixCouleurIA();
                     return joueurIndex;
                 } else {
                     System.out.println(joueur.getPrenom() + " passe.");
@@ -282,7 +380,9 @@ public class PartieDeBelote {
      * @return L'index du joueur qui remporte le pli
      */
     private int jouerPli(int premierJoueur) {
-        Carte[] cartesPli = new Carte[4];
+        pliActuel++;
+        cartesPliActuel = new Carte[4];
+        nombreCartesJouees = 0;
         Couleur couleurDemandee = null;
         int gagnant = premierJoueur;
         Carte carteGagnante = null;
@@ -290,26 +390,46 @@ public class PartieDeBelote {
         // Chaque joueur joue une carte
         for (int i = 0; i < 4; i++) {
             int joueurIndex = (premierJoueur + i) % 4;
-            Client joueur = joueurs[joueurIndex];
+            Human joueur = joueurs[joueurIndex];
             
             System.out.println("\nC'est à " + joueur.getPrenom() + " de jouer.");
             
             Carte carteJouee;
             
+            // Vérifier si ce joueur est le joueur humain en mode interactif
+            boolean estJoueurHumain = modeInteractif && nomJoueurHumain != null && 
+                                     joueur.getPrenom().equalsIgnoreCase(nomJoueurHumain);
+            
             if (joueurIndex == 0) {
-                // Joueur humain
-                carteJouee = faireJouerJoueurHumain(mainJoueur1, couleurDemandee);
+                if (estJoueurHumain) {
+                    carteJouee = faireJouerJoueurHumain(mainJoueur1, couleurDemandee, joueurIndex);
+                } else {
+                    carteJouee = faireJouerIA(mainJoueur1, couleurDemandee, joueurIndex);
+                }
             } else if (joueurIndex == 1) {
-                carteJouee = faireJouerIA(mainJoueur2, couleurDemandee);
+                if (estJoueurHumain) {
+                    carteJouee = faireJouerJoueurHumain(mainJoueur2, couleurDemandee, joueurIndex);
+                } else {
+                    carteJouee = faireJouerIA(mainJoueur2, couleurDemandee, joueurIndex);
+                }
             } else if (joueurIndex == 2) {
-                carteJouee = faireJouerIA(mainJoueur3, couleurDemandee);
+                if (estJoueurHumain) {
+                    carteJouee = faireJouerJoueurHumain(mainJoueur3, couleurDemandee, joueurIndex);
+                } else {
+                    carteJouee = faireJouerIA(mainJoueur3, couleurDemandee, joueurIndex);
+                }
             } else {
-                carteJouee = faireJouerIA(mainJoueur4, couleurDemandee);
+                if (estJoueurHumain) {
+                    carteJouee = faireJouerJoueurHumain(mainJoueur4, couleurDemandee, joueurIndex);
+                } else {
+                    carteJouee = faireJouerIA(mainJoueur4, couleurDemandee, joueurIndex);
+                }
             }
             
-            System.out.println("→ " + joueur.getPrenom() + " joue: " + carteJouee);
+            System.out.println("» " + joueur.getPrenom() + " joue: " + carteJouee);
             
-            cartesPli[joueurIndex] = carteJouee;
+            cartesPliActuel[joueurIndex] = carteJouee;
+            nombreCartesJouees++;
             
             // Définir la couleur demandée (première carte du pli)
             if (i == 0) {
@@ -328,13 +448,19 @@ public class PartieDeBelote {
             }
         }
         
+        // Valider et comptabiliser les annonces au 2ème pli
+        if (pliActuel == 2 && !annoncesValidees) {
+            validerEtComptabiliserAnnonces();
+            annoncesValidees = true;
+        }
+        
         return gagnant;
     }
     
     /**
      * Fait jouer un joueur humain
      */
-    private Carte faireJouerJoueurHumain(List<Carte> main, Couleur couleurDemandee) {
+    private Carte faireJouerJoueurHumain(List<Carte> main, Couleur couleurDemandee, int joueurIndex) {
         while (true) {
             afficherMain(main);
             System.out.print("Choisissez une carte (1-" + main.size() + "): ");
@@ -343,11 +469,12 @@ public class PartieDeBelote {
             Carte carteChoisie = main.get(choix - 1);
             
             // Vérifier si le coup est valide
-            if (estCoupValide(carteChoisie, main, couleurDemandee)) {
+            if (estCoupValide(carteChoisie, main, couleurDemandee, joueurIndex)) {
                 main.remove(choix - 1);
                 return carteChoisie;
             } else {
-                System.out.println("❌ Coup invalide! Vous devez suivre la couleur ou couper avec un atout.");
+                System.out.println("❌ Coup invalide! Vous devez respecter les règles de la Belote.");
+                afficherReglesCoup(couleurDemandee, joueurIndex);
             }
         }
     }
@@ -355,12 +482,12 @@ public class PartieDeBelote {
     /**
      * Fait jouer l'IA
      */
-    private Carte faireJouerIA(List<Carte> main, Couleur couleurDemandee) {
+    private Carte faireJouerIA(List<Carte> main, Couleur couleurDemandee, int joueurIndex) {
         // Filtrer les cartes valides
         List<Carte> cartesValides = new ArrayList<>();
         
         for (Carte carte : main) {
-            if (estCoupValide(carte, main, couleurDemandee)) {
+            if (estCoupValide(carte, main, couleurDemandee, joueurIndex)) {
                 cartesValides.add(carte);
             }
         }
@@ -377,30 +504,74 @@ public class PartieDeBelote {
     }
     
     /**
-     * Vérifie si un coup est valide selon les règles de la Belote
+     * Vérifie si un coup est valide selon les règles strictes de la Belote
+     * @param carte La carte que le joueur veut jouer
+     * @param main La main du joueur
+     * @param couleurDemandee La couleur demandée (null si premier du pli)
+     * @param joueurIndex L'index du joueur
+     * @return true si le coup est valide
      */
-    private boolean estCoupValide(Carte carte, List<Carte> main, Couleur couleurDemandee) {
+    private boolean estCoupValide(Carte carte, List<Carte> main, Couleur couleurDemandee, int joueurIndex) {
         // Si c'est le premier coup du pli, n'importe quelle carte est valide
-        if (couleurDemandee == null) {
+        if (couleurDemandee == null || nombreCartesJouees == 0) {
             return true;
         }
         
         // Vérifier si le joueur a de la couleur demandée
-        boolean aCouleurDemandee = false;
-        for (Carte c : main) {
-            if (c.getCouleur() == couleurDemandee) {
-                aCouleurDemandee = true;
-                break;
+        boolean aCouleurDemandee = main.stream().anyMatch(c -> c.getCouleur() == couleurDemandee);
+        
+        // RÈGLE 1: Si le joueur a la couleur demandée, il DOIT la jouer
+        if (aCouleurDemandee) {
+            if (carte.getCouleur() != couleurDemandee) {
+                return false;
+            }
+            
+            // Si la couleur demandée EST l'atout, vérifier l'obligation de monter
+            if (couleurDemandee == atout) {
+                return verifierObligationMonterAtout(carte, main, joueurIndex);
+            }
+            
+            return true;
+        }
+        
+        // RÈGLE 2: Le joueur n'a pas la couleur demandée
+        // Vérifier si le partenaire mène (important de le faire en premier)
+        boolean partenaireMene = verifiePartenaireMene(joueurIndex);
+        
+        // Si le partenaire mène, le joueur peut défausser ou pisser librement
+        if (partenaireMene) {
+            return true;
+        }
+        
+        // Vérifier s'il y a des atouts déjà joués dans le pli par un adversaire
+        Carte plusFortAtoutDuPli = trouverPlusFortAtoutDuPli();
+        
+        // Si un adversaire a joué un atout
+        if (plusFortAtoutDuPli != null) {
+            // Le joueur DOIT surcouper s'il le peut
+            boolean peutSurcouper = main.stream()
+                .anyMatch(c -> c.getCouleur() == atout && 
+                    c.getValeur().getOrdreForceAtout(c.getValeur()) > 
+                    plusFortAtoutDuPli.getValeur().getOrdreForceAtout(plusFortAtoutDuPli.getValeur()));
+            
+            if (peutSurcouper) {
+                // La carte jouée doit être un atout qui surcoupe
+                return carte.getCouleur() == atout && 
+                    carte.getValeur().getOrdreForceAtout(carte.getValeur()) > 
+                    plusFortAtoutDuPli.getValeur().getOrdreForceAtout(plusFortAtoutDuPli.getValeur());
+            } else {
+                // Le joueur ne peut pas surcouper : il peut pisser ou défausser
+                return true;
             }
         }
         
-        // Si le joueur a de la couleur demandée, il doit la jouer
-        if (aCouleurDemandee) {
-            return carte.getCouleur() == couleurDemandee;
+        // Aucun atout joué par un adversaire : le joueur DOIT couper s'il a des atouts
+        boolean aAtout = main.stream().anyMatch(c -> c.getCouleur() == atout);
+        if (aAtout) {
+            return carte.getCouleur() == atout;
         }
         
-        // Si le joueur n'a pas la couleur demandée, il peut couper avec un atout
-        // ou défausser n'importe quelle carte
+        // Le joueur n'a ni la couleur ni d'atout : il peut défausser
         return true;
     }
     
@@ -446,9 +617,13 @@ public class PartieDeBelote {
      * Compte les points du dernier pli joué
      */
     private int compterPointsDernierPli() {
-        // Pour simplifier, on retourne une valeur aléatoire entre 10 et 30
-        // Dans une vraie implémentation, on stockerait les cartes du pli
-        return 10 + (int) (Math.random() * 20);
+        int total = 0;
+        for (int i = 0; i < 4; i++) {
+            if (cartesPliActuel[i] != null) {
+                total += cartesPliActuel[i].getPoints(atout);
+            }
+        }
+        return total;
     }
     
     /**
@@ -491,6 +666,340 @@ public class PartieDeBelote {
         }
     }
     
+    // ========== MÉTHODES POUR LES ANNONCES ==========
+    
+    /**
+     * Détecte toutes les annonces possibles pour chaque joueur après la distribution
+     */
+    private void detecterAnnonces() {
+        annoncesParEquipe.get(0).clear();
+        annoncesParEquipe.get(1).clear();
+        
+        // Détecter pour chaque joueur
+        detecterAnnoncesJoueur(mainJoueur1, 0);
+        detecterAnnoncesJoueur(mainJoueur2, 1);
+        detecterAnnoncesJoueur(mainJoueur3, 2);
+        detecterAnnoncesJoueur(mainJoueur4, 3);
+    }
+    
+    /**
+     * Détecte les annonces pour un joueur spécifique
+     */
+    private void detecterAnnoncesJoueur(List<Carte> main, int joueurIndex) {
+        int equipeIndex = (joueurIndex == 0 || joueurIndex == 2) ? 0 : 1;
+        
+        // Détecter Belote-Rebelote (Roi + Dame d'atout)
+        boolean aRoiAtout = main.stream().anyMatch(c -> c.getCouleur() == atout && c.getValeur() == ValeurCarte.ROI);
+        boolean aDameAtout = main.stream().anyMatch(c -> c.getCouleur() == atout && c.getValeur() == ValeurCarte.DAME);
+        
+        if (aRoiAtout && aDameAtout) {
+            List<Carte> cartesBelote = new ArrayList<>();
+            cartesBelote.add(main.stream().filter(c -> c.getCouleur() == atout && c.getValeur() == ValeurCarte.ROI).findFirst().get());
+            cartesBelote.add(main.stream().filter(c -> c.getCouleur() == atout && c.getValeur() == ValeurCarte.DAME).findFirst().get());
+            annoncesParEquipe.get(equipeIndex).add(new Annonce(Annonce.TypeAnnonce.BELOTE_REBELOTE, cartesBelote, joueurIndex));
+        }
+        
+        // Détecter les carrés
+        for (ValeurCarte valeur : ValeurCarte.values()) {
+            long count = main.stream().filter(c -> c.getValeur() == valeur).count();
+            if (count == 4) {
+                List<Carte> cartesCarre = main.stream().filter(c -> c.getValeur() == valeur).collect(java.util.stream.Collectors.toList());
+                Annonce.TypeAnnonce typeCarre = getTypeCarreSelonValeur(valeur);
+                if (typeCarre != null) {
+                    annoncesParEquipe.get(equipeIndex).add(new Annonce(typeCarre, cartesCarre, joueurIndex));
+                }
+            }
+        }
+        
+        // Détecter les suites (Tierce, 50, 100)
+        for (Couleur couleur : Couleur.values()) {
+            List<Carte> cartesCouleur = main.stream()
+                .filter(c -> c.getCouleur() == couleur)
+                .sorted((c1, c2) -> Integer.compare(c1.getValeur().getOrdreAnnonce(), c2.getValeur().getOrdreAnnonce()))
+                .collect(java.util.stream.Collectors.toList());
+            
+            if (cartesCouleur.size() >= 3) {
+                List<Carte> suiteMax = trouverPlusLongueSuite(cartesCouleur);
+                if (suiteMax.size() >= 5) {
+                    annoncesParEquipe.get(equipeIndex).add(new Annonce(Annonce.TypeAnnonce.CENT, suiteMax, joueurIndex));
+                } else if (suiteMax.size() == 4) {
+                    annoncesParEquipe.get(equipeIndex).add(new Annonce(Annonce.TypeAnnonce.CINQUANTE, suiteMax, joueurIndex));
+                } else if (suiteMax.size() == 3) {
+                    annoncesParEquipe.get(equipeIndex).add(new Annonce(Annonce.TypeAnnonce.TIERCE, suiteMax, joueurIndex));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Retourne le type de carré selon la valeur
+     */
+    private Annonce.TypeAnnonce getTypeCarreSelonValeur(ValeurCarte valeur) {
+        switch (valeur) {
+            case VALET: return Annonce.TypeAnnonce.CARRE_VALETS;
+            case NEUF: return Annonce.TypeAnnonce.CARRE_NEUF;
+            case AS: return Annonce.TypeAnnonce.CARRE_AS;
+            case DIX: return Annonce.TypeAnnonce.CARRE_DIX;
+            case ROI: return Annonce.TypeAnnonce.CARRE_ROIS;
+            case DAME: return Annonce.TypeAnnonce.CARRE_DAMES;
+            default: return null; // Les autres carrés ne comptent pas
+        }
+    }
+    
+    /**
+     * Trouve la plus longue suite consécutive dans une liste de cartes
+     */
+    private List<Carte> trouverPlusLongueSuite(List<Carte> cartes) {
+        if (cartes.isEmpty()) return new ArrayList<>();
+        
+        List<Carte> suiteCourante = new ArrayList<>();
+        List<Carte> suiteMax = new ArrayList<>();
+        suiteCourante.add(cartes.get(0));
+        
+        for (int i = 1; i < cartes.size(); i++) {
+            int ordrePrec = cartes.get(i - 1).getValeur().getOrdreAnnonce();
+            int ordreCourant = cartes.get(i).getValeur().getOrdreAnnonce();
+            
+            if (ordreCourant == ordrePrec + 1) {
+                suiteCourante.add(cartes.get(i));
+            } else {
+                if (suiteCourante.size() > suiteMax.size()) {
+                    suiteMax = new ArrayList<>(suiteCourante);
+                }
+                suiteCourante.clear();
+                suiteCourante.add(cartes.get(i));
+            }
+        }
+        
+        if (suiteCourante.size() > suiteMax.size()) {
+            suiteMax = suiteCourante;
+        }
+        
+        return suiteMax;
+    }
+    
+    /**
+     * Affiche les annonces détectées
+     */
+    private void afficherAnnonces() {
+        System.out.println("\n=== ANNONCES DÉTECTÉES ===");
+        
+        if (annoncesParEquipe.get(0).isEmpty() && annoncesParEquipe.get(1).isEmpty()) {
+            System.out.println("Aucune annonce.");
+            return;
+        }
+        
+        // Afficher pour équipe 1
+        if (!annoncesParEquipe.get(0).isEmpty()) {
+            System.out.println("\n" + equipe1.getNom() + ":");
+            Annonce meilleureAnnonce = trouverMeilleureAnnonce(annoncesParEquipe.get(0));
+            if (meilleureAnnonce != null) {
+                System.out.println("  » " + meilleureAnnonce);
+            }
+        }
+        
+        // Afficher pour équipe 2
+        if (!annoncesParEquipe.get(1).isEmpty()) {
+            System.out.println("\n" + equipe2.getNom() + ":");
+            Annonce meilleureAnnonce = trouverMeilleureAnnonce(annoncesParEquipe.get(1));
+            if (meilleureAnnonce != null) {
+                System.out.println("  » " + meilleureAnnonce);
+            }
+        }
+        
+        System.out.println("\nLes annonces seront validées au 2ème pli.");
+    }
+    
+    /**
+     * Trouve la meilleure annonce parmi une liste (priorité: Carré > 100 > 50 > Tierce)
+     * La Belote-Rebelote est toujours comptée à part
+     */
+    private Annonce trouverMeilleureAnnonce(List<Annonce> annonces) {
+        Annonce meilleure = null;
+        int maxPoints = 0;
+        
+        for (Annonce a : annonces) {
+            if (a.type != Annonce.TypeAnnonce.BELOTE_REBELOTE && a.getPoints() > maxPoints) {
+                maxPoints = a.getPoints();
+                meilleure = a;
+            }
+        }
+        
+        return meilleure;
+    }
+    
+    /**
+     * Valide et comptabilise les annonces au 2ème pli
+     */
+    private void validerEtComptabiliserAnnonces() {
+        System.out.println("\n╔══════════════════════════════════════╗");
+        System.out.println("║  VALIDATION DES ANNONCES (PLI 2)    ║");
+        System.out.println("╚══════════════════════════════════════╝");
+        
+        // Les annonces ne comptent que si l'équipe fait son contrat (82 points)
+        // Pour l'instant, on les comptabilise directement
+        // (La vérification se fera à la fin de la manche)
+        
+        Annonce meilleureE1 = trouverMeilleureAnnonce(annoncesParEquipe.get(0));
+        Annonce meilleureE2 = trouverMeilleureAnnonce(annoncesParEquipe.get(1));
+        
+        // Comparer les annonces : seule la meilleure équipe marque (sauf Belote)
+        if (meilleureE1 != null && meilleureE2 != null) {
+            if (meilleureE1.getPoints() > meilleureE2.getPoints()) {
+                System.out.println("» " + equipe1.getNom() + " marque: " + meilleureE1);
+            } else if (meilleureE2.getPoints() > meilleureE1.getPoints()) {
+                System.out.println("» " + equipe2.getNom() + " marque: " + meilleureE2);
+            } else {
+                System.out.println("Égalité d'annonces : aucune ne compte.");
+            }
+        } else if (meilleureE1 != null) {
+            System.out.println("» " + equipe1.getNom() + " marque: " + meilleureE1);
+        } else if (meilleureE2 != null) {
+            System.out.println("» " + equipe2.getNom() + " marque: " + meilleureE2);
+        }
+        
+        // Belote-Rebelote compte toujours pour l'équipe qui l'a
+        for (Annonce a : annoncesParEquipe.get(0)) {
+            if (a.type == Annonce.TypeAnnonce.BELOTE_REBELOTE) {
+                System.out.println("» " + equipe1.getNom() + " a la Belote-Rebelote (+20 pts)");
+            }
+        }
+        for (Annonce a : annoncesParEquipe.get(1)) {
+            if (a.type == Annonce.TypeAnnonce.BELOTE_REBELOTE) {
+                System.out.println("» " + equipe2.getNom() + " a la Belote-Rebelote (+20 pts)");
+            }
+        }
+    }
+    
+    // ========== MÉTHODES AUXILIAIRES POUR LA VALIDATION DES COUPS ==========
+    
+    /**
+     * Vérifie l'obligation de monter à l'atout
+     */
+    private boolean verifierObligationMonterAtout(Carte carte, List<Carte> main, int joueurIndex) {
+        // Trouver le plus fort atout joué dans le pli
+        Carte plusFortAtout = trouverPlusFortAtoutDuPli();
+        
+        // Si aucun atout n'a été joué, pas d'obligation de monter
+        if (plusFortAtout == null) {
+            return true;
+        }
+        
+        // Si le partenaire mène avec l'atout, pas d'obligation
+        if (verifiePartenaireMene(joueurIndex)) {
+            return true;
+        }
+        
+        // Le joueur doit monter s'il peut
+        boolean peutMonter = main.stream()
+            .anyMatch(c -> c.getCouleur() == atout && 
+                c.getValeur().getOrdreForceAtout(c.getValeur()) > 
+                plusFortAtout.getValeur().getOrdreForceAtout(plusFortAtout.getValeur()));
+        
+        if (peutMonter) {
+            return carte.getValeur().getOrdreForceAtout(carte.getValeur()) > 
+                   plusFortAtout.getValeur().getOrdreForceAtout(plusFortAtout.getValeur());
+        }
+        
+        return true; // Ne peut pas monter, n'importe quel atout est OK
+    }
+    
+    /**
+     * Trouve le plus fort atout joué dans le pli actuel
+     * @return Le plus fort atout du pli, ou null si aucun atout n'a été joué
+     */
+    private Carte trouverPlusFortAtoutDuPli() {
+        Carte plusFort = null;
+        int forceMax = -1;
+        
+        for (int i = 0; i < nombreCartesJouees; i++) {
+            Carte c = cartesPliActuel[i];
+            if (c != null && c.getCouleur() == atout) {
+                int force = c.getValeur().getOrdreForceAtout(c.getValeur());
+                if (force > forceMax) {
+                    forceMax = force;
+                    plusFort = c;
+                }
+            }
+        }
+        
+        return plusFort;
+    }
+    
+    /**
+     * Vérifie si le partenaire du joueur mène actuellement le pli
+     * @param joueurIndex Index du joueur
+     * @return true si le partenaire du joueur mène, false sinon
+     */
+    private boolean verifiePartenaireMene(int joueurIndex) {
+        // Si aucune carte jouée ou première carte null, impossible de déterminer
+        if (nombreCartesJouees == 0 || cartesPliActuel[0] == null) {
+            return false;
+        }
+        
+        // Trouver qui mène actuellement
+        Carte carteGagnante = cartesPliActuel[0];
+        int gagnantActuel = 0;
+        Couleur couleurDemandee = carteGagnante.getCouleur();
+        
+        for (int i = 1; i < nombreCartesJouees; i++) {
+            if (cartesPliActuel[i] != null) {
+                if (determinerGagnant(carteGagnante, cartesPliActuel[i], couleurDemandee) == 2) {
+                    carteGagnante = cartesPliActuel[i];
+                    gagnantActuel = i;
+                }
+            }
+        }
+        
+        // Vérifier si le gagnant actuel est le partenaire
+        boolean equipe1 = (joueurIndex == 0 || joueurIndex == 2);
+        boolean gagnantEquipe1 = (gagnantActuel == 0 || gagnantActuel == 2);
+        
+        return equipe1 == gagnantEquipe1;
+    }
+    
+    /**
+     * Affiche les règles applicables pour le coup actuel
+     */
+    private void afficherReglesCoup(Couleur couleurDemandee, int joueurIndex) {
+        System.out.println("\n» Règles applicables:");
+        
+        List<Carte> main = getMainJoueur(joueurIndex);
+        boolean aCouleur = main.stream().anyMatch(c -> c.getCouleur() == couleurDemandee);
+        
+        if (aCouleur) {
+            System.out.println("  » Vous DEVEZ jouer la couleur demandée (" + couleurDemandee + ")");
+            if (couleurDemandee == atout) {
+                System.out.println("  » Vous devez MONTER à l'atout si possible");
+            }
+        } else {
+            Carte plusFortAtout = trouverPlusFortAtoutDuPli();
+            if (plusFortAtout != null && !verifiePartenaireMene(joueurIndex)) {
+                System.out.println("  » Un adversaire a coupé, vous devez SURCOUPER si possible");
+            } else {
+                boolean aAtout = main.stream().anyMatch(c -> c.getCouleur() == atout);
+                if (aAtout) {
+                    System.out.println("  » Vous devez COUPER avec un atout");
+                } else {
+                    System.out.println("  » Vous pouvez défausser n'importe quelle carte");
+                }
+            }
+        }
+    }
+    
+    /**
+     * Retourne la main du joueur selon son index
+     */
+    private List<Carte> getMainJoueur(int joueurIndex) {
+        switch (joueurIndex) {
+            case 0: return mainJoueur1;
+            case 1: return mainJoueur2;
+            case 2: return mainJoueur3;
+            case 3: return mainJoueur4;
+            default: return new ArrayList<>();
+        }
+    }
+    
     /**
      * Lit un entier entre min et max depuis l'entrée utilisateur
      */
@@ -508,5 +1017,28 @@ public class PartieDeBelote {
                 System.out.print("Entrée invalide. Veuillez entrer un nombre: ");
             }
         }
+    }
+    
+    /**
+     * Décision IA pour prendre ou passer lors des enchères
+     * @param premierTour true si c'est le premier tour d'enchères
+     * @return true si l'IA prend, false si elle passe
+     */
+    private boolean enchereIA(boolean premierTour) {
+        if (premierTour) {
+            // Premier tour: 25% de chance de prendre
+            return Math.random() < 0.25;
+        } else {
+            // Deuxième tour: 20% de chance de prendre
+            return Math.random() < 0.20;
+        }
+    }
+    
+    /**
+     * Choix IA d'une couleur d'atout
+     * @return Une couleur choisie aléatoirement
+     */
+    private Couleur choixCouleurIA() {
+        return Couleur.values()[(int) (Math.random() * 4)];
     }
 }

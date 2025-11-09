@@ -39,10 +39,18 @@ public class FeuilleDeScore {
                          "Pos", "Équipe", "Points", "Joués", "Gagnés", "Perdus");
         System.out.println("--------------------------------------------------------");
         
+        int rangActuel = 1;
         for (int i = 0; i < equipes.size(); i++) {
             Equipe equipe = equipes.get(i);
+            
+            // Si ce n'est pas la première équipe et que les points sont différents de l'équipe précédente
+            // alors on met à jour le rang
+            if (i > 0 && equipe.getPoints() < equipes.get(i - 1).getPoints()) {
+                rangActuel = i + 1;
+            }
+            
             System.out.printf("%-3d %-20s %-8d %-8d %-8d %-8d%n", 
-                             i + 1, 
+                             rangActuel, 
                              equipe.getNom(), 
                              equipe.getPoints(), 
                              equipe.getMatchsJoues(), 

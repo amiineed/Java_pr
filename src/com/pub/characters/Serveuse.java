@@ -1,6 +1,8 @@
 package com.pub.characters;
 
-public class Serveuse extends Human {
+import com.pub.game.JoueurBelote;
+
+public class Serveuse extends Human implements JoueurBelote {
     private int niveauCharme;
     
     public Serveuse(String prenom, String surnom, double porteMonnaie, int niveauCharme) {
