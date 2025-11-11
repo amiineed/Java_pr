@@ -541,10 +541,43 @@ public class Main {
         tournoiEnCours.afficherEquipesInscrites();
     }
 
-    private static void sauvegarderEtatSimplifie(String nomFichier) {
+    private static void sauvegarderEtatSimplifie(String nomFichierDefaut) {
+        // Toujours demander un nom de sauvegarde
+        System.out.println("\n=== SAUVEGARDER VOTRE PARTIE ===");
+        System.out.print("Entrez un nom pour votre sauvegarde (ex: partie_amine) : ");
+        String nomBase = scanner.nextLine().trim();
+        
+        if (nomBase.isEmpty()) {
+            nomBase = "bar_state";
+            System.out.println("Nom vide. Utilisation du nom par défaut: " + nomBase);
+        }
+        
+        // Toujours utiliser l'extension .barsave
+        String nomFichier = nomBase.endsWith(".barsave") ? nomBase : nomBase + ".barsave";
+        
+        // S'assurer que le dossier saves/ existe
+        Helper.ensureDirectoryExists("saves");
+        
+        // Construire le chemin complet dans le dossier saves/
+        String cheminComplet = "saves/" + nomFichier;
+        
+        // Vérifier si le fichier existe déjà
+        File fichier = new File(cheminComplet);
+        if (fichier.exists()) {
+            System.out.print("[!] Le fichier '" + nomFichier + "' existe déjà. Écraser? (oui/non) : ");
+            String reponse = scanner.nextLine().trim().toLowerCase();
+            if (!reponse.equals("oui") && !reponse.equals("o") && !reponse.equals("y") && !reponse.equals("yes")) {
+                System.out.println("Sauvegarde annulée.");
+                return;
+            }
+        }
+        
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(new FileWriter(nomFichier));
+            writer = new PrintWriter(new FileWriter(cheminComplet));
+            
+            // === SECTION BAR ===
+            writer.println("=== BAR ===");
             writer.println("State of bar: " + (leBar != null ? leBar.getNom() : "UNINITIALIZED"));
             try {
                 if (leBar != null && leBar.getBarman() != null && leBar.getBarman().getCaisse() != null) {
@@ -562,26 +595,117 @@ public class Main {
                     writer.println(c.getPrenom() + ";" + c.getPorteMonnaie() + ";" + c.getNiveauAlcoolemie());
                 }
             }
-            System.out.println("State saved to " + nomFichier);
+            
+            writer.println("--- Personnel ---");
+            if (leBar != null && leBar.getPersonnel() != null) {
+                for (Human personnel : leBar.getPersonnel()) {
+                    if (personnel instanceof com.pub.characters.Serveur) {
+                        com.pub.characters.Serveur serveur = (com.pub.characters.Serveur) personnel;
+                        writer.println("Serveur;" + serveur.getPrenom() + ";" + serveur.getSurnom() + ";" + 
+                                     serveur.getPorteMonnaie() + ";" + serveur.getTailleBiceps());
+                    } else if (personnel instanceof com.pub.characters.Serveuse) {
+                        com.pub.characters.Serveuse serveuse = (com.pub.characters.Serveuse) personnel;
+                        writer.println("Serveuse;" + serveuse.getPrenom() + ";" + serveuse.getSurnom() + ";" + 
+                                     serveuse.getPorteMonnaie() + ";" + serveuse.getNiveauCharme());
+                    }
+                }
+            }
+            
+            // === SECTION TOURNOI ===
+            writer.println("=== TOURNOI ===");
+            if (tournoiEnCours == null) {
+                writer.println("TournoiActif: false");
+            } else {
+                writer.println("TournoiActif: true");
+                writer.println("FraisInscription: " + tournoiEnCours.getFraisInscription());
+                writer.println("InscriptionsOuvertes: " + tournoiEnCours.isInscriptionsOuvertes());
+                writer.println("TournoiDemarre: " + tournoiEnCours.isTournoiDemarre());
+                writer.println("TournoiTermine: " + tournoiEnCours.isTournoiTermine());
+                
+                // Sauvegarder les équipes inscrites avec leurs scores
+                writer.println("--- Equipes ---");
+                List<Equipe> equipes = tournoiEnCours.getEquipesInscrites();
+                for (Equipe equipe : equipes) {
+                    writer.println(equipe.getNom() + ";" + 
+                                 equipe.getJoueur1().getPrenom() + ";" + 
+                                 equipe.getJoueur2().getPrenom() + ";" +
+                                 equipe.getPoints() + ";" +
+                                 equipe.getMatchsJoues() + ";" +
+                                 equipe.getMatchsGagnes());
+                }
+                
+                // Note: Les matchs du calendrier ne sont pas sauvegardés car ils seront
+                // recréés automatiquement lors du chargement si le tournoi est démarré
+            }
+            
+            System.out.println("» État sauvegardé dans '" + cheminComplet + "'");
         } catch (IOException e) {
-            System.err.println("Save error: " + e.getMessage());
+            System.err.println("Erreur de sauvegarde: " + e.getMessage());
         } finally {
             if (writer != null) writer.close();
         }
     }
 
-    private static void chargerEtatSimplifie(String nomFichier) {
+    private static void chargerEtatSimplifie(String nomFichierDefaut) {
         if (leBar == null) {
             System.out.println("Bar not initialized. Cannot load state.");
             return;
         }
         
-        File file = new File(nomFichier);
+        // Rechercher tous les fichiers .barsave dans le dossier saves/
+        File repertoireSaves = new File("saves");
+        
+        // Vérifier si le dossier saves/ existe
+        if (!repertoireSaves.exists() || !repertoireSaves.isDirectory()) {
+            System.out.println("[!] Aucun fichier de sauvegarde trouvé (.barsave)");
+            System.out.println("Le dossier 'saves/' n'existe pas encore.");
+            System.out.println("Utilisez le menu 6 pour créer une sauvegarde.");
+            return;
+        }
+        
+        File[] fichiersSave = repertoireSaves.listFiles((dir, name) -> name.endsWith(".barsave"));
+        
+        if (fichiersSave == null || fichiersSave.length == 0) {
+            System.out.println("[!] Aucun fichier de sauvegarde trouvé (.barsave)");
+            System.out.println("Utilisez le menu 6 pour créer une sauvegarde.");
+            return;
+        }
+        
+        // Afficher la liste des fichiers disponibles
+        System.out.println("\n=== VOS PARTIES SAUVEGARDÉES ===");
+        for (int i = 0; i < fichiersSave.length; i++) {
+            System.out.println((i + 1) + ". " + fichiersSave[i].getName());
+        }
+        System.out.println("0. Annuler");
+        
+        // Demander à l'utilisateur de choisir
+        System.out.print("\nQuelle partie voulez-vous charger ? ");
+        int choix = lireChoixUtilisateur(0, fichiersSave.length);
+        
+        if (choix == 0) {
+            System.out.println("Chargement annulé.");
+            return;
+        }
+        
+        String nomFichier = fichiersSave[choix - 1].getName();
+        File file = new File("saves/" + nomFichier);
         try (Scanner fileScanner = new Scanner(file)) {
             System.out.println("Loading state from " + nomFichier + "...");
             
             int clientsLoaded = 0;
+            int personnelLoaded = 0;
+            int equipesLoaded = 0;
             boolean cashUpdated = false;
+            boolean tournoiRestored = false;
+            String currentSection = "";  // Track which section we're in
+            
+            // Variables pour reconstruire le tournoi
+            boolean tournoiActif = false;
+            double fraisInscription = 0;
+            boolean inscriptionsOuvertes = false;
+            boolean tournoiDemarre = false;
+            boolean tournoiTermine = false;
+            List<String[]> equipesData = new ArrayList<>();
             
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine().trim();
@@ -602,21 +726,52 @@ public class Main {
                                 cashUpdated = true;
                             }
                         } catch (NumberFormatException e) {
-                            System.out.println("⚠️ Cannot parse cash value: " + cashValue);
+                            System.out.println("[!] Cannot parse cash value: " + cashValue);
                         }
                     }
                     continue;
                 }
                 
-                // Skip header lines
-                if (line.startsWith("State of bar:") || line.startsWith("--- Clients ---")) {
+                // Track section headers
+                if (line.startsWith("State of bar:") || line.equals("=== BAR ===")) {
+                    currentSection = "bar";
+                    continue;
+                } else if (line.equals("--- Clients ---")) {
+                    currentSection = "clients";
+                    continue;
+                } else if (line.equals("--- Personnel ---")) {
+                    currentSection = "personnel";
+                    continue;
+                } else if (line.equals("=== TOURNOI ===")) {
+                    currentSection = "tournoi";
+                    continue;
+                } else if (line.equals("--- Equipes ---")) {
+                    currentSection = "equipes";
                     continue;
                 }
                 
-                // Parse client line (format: prenom;porteMonnaie;niveauAlcoolemie)
+                // Parse tournament configuration
+                if (currentSection.equals("tournoi")) {
+                    if (line.startsWith("TournoiActif: ")) {
+                        tournoiActif = Boolean.parseBoolean(line.substring(14).trim());
+                    } else if (line.startsWith("FraisInscription: ")) {
+                        fraisInscription = Double.parseDouble(line.substring(18).trim());
+                    } else if (line.startsWith("InscriptionsOuvertes: ")) {
+                        inscriptionsOuvertes = Boolean.parseBoolean(line.substring(22).trim());
+                    } else if (line.startsWith("TournoiDemarre: ")) {
+                        tournoiDemarre = Boolean.parseBoolean(line.substring(16).trim());
+                    } else if (line.startsWith("TournoiTermine: ")) {
+                        tournoiTermine = Boolean.parseBoolean(line.substring(16).trim());
+                    }
+                    continue;
+                }
+                
+                // Parse lines based on current section
                 if (line.contains(";")) {
                     String[] data = line.split(";");
-                    if (data.length >= 3) {
+                    
+                    if (currentSection.equals("clients") && data.length >= 3) {
+                        // Parse client line (format: prenom;porteMonnaie;niveauAlcoolemie)
                         try {
                             String prenom = data[0].trim();
                             double porteMonnaie = Double.parseDouble(data[1].trim());
@@ -647,9 +802,124 @@ public class Main {
                             }
                             clientsLoaded++;
                         } catch (NumberFormatException e) {
-                            System.out.println("⚠️ Cannot parse client data: " + line);
+                            System.out.println("[!] Cannot parse client data: " + line);
+                        }
+                    } else if (currentSection.equals("personnel") && data.length >= 5) {
+                        // Parse personnel line (format: TYPE;prenom;surnom;porteMonnaie;attributSpecifique)
+                        try {
+                            String type = data[0].trim();
+                            String prenom = data[1].trim();
+                            String surnom = data[2].trim();
+                            double porteMonnaie = Double.parseDouble(data[3].trim());
+                            int attributSpecifique = Integer.parseInt(data[4].trim());
+                            
+                            // Find existing personnel or create new one
+                            Human personnelExistant = null;
+                            if (leBar.getPersonnel() != null) {
+                                for (Human p : leBar.getPersonnel()) {
+                                    if (p.getPrenom().equals(prenom)) {
+                                        personnelExistant = p;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            if (type.equals("Serveur")) {
+                                if (personnelExistant instanceof com.pub.characters.Serveur) {
+                                    // Update existing Serveur
+                                    personnelExistant.setPorteMonnaie(porteMonnaie);
+                                    ((com.pub.characters.Serveur) personnelExistant).setTailleBiceps(attributSpecifique);
+                                } else {
+                                    // Create new Serveur
+                                    com.pub.characters.Serveur serveur = new com.pub.characters.Serveur(
+                                        prenom, surnom, porteMonnaie, attributSpecifique
+                                    );
+                                    leBar.ajouterPersonnel(serveur);
+                                }
+                                personnelLoaded++;
+                            } else if (type.equals("Serveuse")) {
+                                if (personnelExistant instanceof com.pub.characters.Serveuse) {
+                                    // Update existing Serveuse
+                                    personnelExistant.setPorteMonnaie(porteMonnaie);
+                                    ((com.pub.characters.Serveuse) personnelExistant).setNiveauCharme(attributSpecifique);
+                                } else {
+                                    // Create new Serveuse
+                                    com.pub.characters.Serveuse serveuse = new com.pub.characters.Serveuse(
+                                        prenom, surnom, porteMonnaie, attributSpecifique
+                                    );
+                                    leBar.ajouterPersonnel(serveuse);
+                                }
+                                personnelLoaded++;
+                            }
+                        } catch (NumberFormatException e) {
+                            System.out.println("[!] Cannot parse personnel data: " + line);
+                        }
+                    } else if (currentSection.equals("equipes") && data.length >= 6) {
+                        // Store equipes data for later reconstruction
+                        // Format: nomEquipe;joueur1Prenom;joueur2Prenom;points;matchsJoues;matchsGagnes
+                        equipesData.add(data);
+                        equipesLoaded++;
+                    }
+                }
+            }
+            
+            // Reconstruire le tournoi si nécessaire
+            if (tournoiActif) {
+                try {
+                    tournoiEnCours = new Tournoi(leBar, fraisInscription);
+                    
+                    // Ouvrir les inscriptions et inscrire les équipes
+                    if (!equipesData.isEmpty()) {
+                        tournoiEnCours.ouvrirInscriptions();
+                        
+                        for (String[] equipeInfo : equipesData) {
+                            String nomEquipe = equipeInfo[0].trim();
+                            String prenom1 = equipeInfo[1].trim();
+                            String prenom2 = equipeInfo[2].trim();
+                            int points = Integer.parseInt(equipeInfo[3].trim());
+                            int matchsJoues = Integer.parseInt(equipeInfo[4].trim());
+                            int matchsGagnes = Integer.parseInt(equipeInfo[5].trim());
+                            
+                            // Trouver les joueurs dans le bar
+                            Human joueur1 = Helper.trouverJoueurParPrenom(leBar, prenom1);
+                            Human joueur2 = Helper.trouverJoueurParPrenom(leBar, prenom2);
+                            
+                            if (joueur1 != null && joueur2 != null) {
+                                tournoiEnCours.inscrireEquipe(nomEquipe, joueur1, joueur2);
+                                
+                                // Restaurer les scores de l'équipe ET des joueurs
+                                List<Equipe> equipes = tournoiEnCours.getEquipesInscrites();
+                                for (Equipe equipe : equipes) {
+                                    if (equipe.getNom().equals(nomEquipe)) {
+                                        // Mettre à jour les statistiques de l'équipe et des joueurs
+                                        for (int i = 0; i < matchsJoues; i++) {
+                                            boolean victoire = (i < matchsGagnes);
+                                            
+                                            // Mettre à jour l'équipe
+                                            equipe.enregistrerMatch(victoire);
+                                            
+                                            // Mettre à jour les statistiques individuelles des joueurs
+                                            joueur1.enregistrerMatchTournoi(victoire);
+                                            joueur2.enregistrerMatchTournoi(victoire);
+                                        }
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
+                    
+                    // Restaurer l'état du tournoi
+                    if (!inscriptionsOuvertes) {
+                        tournoiEnCours.fermerInscriptions();
+                    }
+                    if (tournoiDemarre) {
+                        tournoiEnCours.demarrerTournoi();
+                    }
+                    
+                    tournoiRestored = true;
+                } catch (Exception e) {
+                    System.out.println("[!] Erreur lors de la reconstruction du tournoi: " + e.getMessage());
                 }
             }
             
@@ -659,6 +929,12 @@ public class Main {
             }
             if (clientsLoaded > 0) {
                 System.out.println("  • " + clientsLoaded + " client(s) chargé(s)");
+            }
+            if (personnelLoaded > 0) {
+                System.out.println("  • " + personnelLoaded + " membre(s) du personnel chargé(s)");
+            }
+            if (tournoiRestored) {
+                System.out.println("  • Tournoi restauré (" + equipesLoaded + " équipe(s))");
             }
             
         } catch (FileNotFoundException e) {

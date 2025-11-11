@@ -8,3 +8,7 @@
 # IDE files
 .vscode/
 .idea/
+
+# User-generated files
+/saves/
+/logs/

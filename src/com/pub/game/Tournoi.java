@@ -452,8 +452,11 @@ public class Tournoi {
         
         // Tâche 3: Gestion de Fichiers
         
+        // S'assurer que le dossier logs/ existe
+        com.pub.main.Helper.ensureDirectoryExists("logs");
+        
         // Écrire le résumé dans un fichier
-        try (PrintWriter writer = new PrintWriter(new FileWriter("tournoi_resume.txt", true))) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("logs/tournoi_resume.txt", true))) {
             writer.println("=".repeat(60));
             writer.println("TOURNOI TERMINÉ - " + new java.util.Date());
             writer.println("=".repeat(60));
@@ -472,9 +475,9 @@ public class Tournoi {
             writer.println("=".repeat(60));
             writer.println();
             
-            System.out.println("\n» Résumé enregistré dans 'tournoi_resume.txt'");
+            System.out.println("\n» Résumé enregistré dans 'logs/tournoi_resume.txt'");
         } catch (IOException e) {
-            System.out.println("⚠️ Erreur lors de l'écriture du fichier de résumé: " + e.getMessage());
+            System.out.println("[!] Erreur lors de l'écriture du fichier de résumé: " + e.getMessage());
         }
     }
     
@@ -496,5 +499,9 @@ public class Tournoi {
     
     public List<Equipe> getEquipesInscrites() {
         return new ArrayList<>(equipesInscrites);
+    }
+    
+    public double getFraisInscription() {
+        return fraisInscription;
     }
 }
