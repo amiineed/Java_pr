@@ -124,107 +124,40 @@ public class Client extends Human implements JoueurBelote {
     public String getStatistiquesDetailles() {
         StringBuilder stats = new StringBuilder();
         stats.append("\n╔═══════════════════════════════════════════════════════════╗\n");
-        stats.append("║        STATISTIQUES DE ").append(getPrenom().toUpperCase());
-        // Padding pour aligner
-        int nameLen = getPrenom().length();
-        int padding = 32 - nameLen;
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
+        stats.append(String.format("║        STATISTIQUES DE %-32s║\n", getPrenom().toUpperCase()));
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
         // Informations générales
-        stats.append("║ Surnom : ").append(getSurnom());
-        padding = 48 - getSurnom().length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
-        
-        stats.append(String.format("║ Argent disponible : %.2f euros", getPorteMonnaie()));
-        String argentStr = String.format("%.2f euros", getPorteMonnaie());
-        padding = 36 - argentStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
-        
-        stats.append(String.format("║ Niveau d'alcoolémie : %.3f g/L", niveauAlcoolemie));
-        String alcoolStr = String.format("%.3f g/L", niveauAlcoolemie);
-        padding = 32 - alcoolStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
+        stats.append(String.format("║ Surnom : %-48s║\n", getSurnom()));
+        stats.append(String.format("║ Argent disponible : %-36s║\n", 
+                                   String.format("%.2f euros", getPorteMonnaie())));
+        stats.append(String.format("║ Niveau d'alcoolémie : %-32s║\n", 
+                                   String.format("%.3f g/L", niveauAlcoolemie)));
         
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         stats.append("║  STATISTIQUES DE CONSOMMATION                             ║\n");
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
-        stats.append(String.format("║ Total de verres consommés : %d", nombreVerresConsommes));
-        String verresStr = String.valueOf(nombreVerresConsommes);
-        padding = 33 - verresStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
+        stats.append(String.format("║ Total de verres consommés : %-33s║\n", nombreVerresConsommes));
         
         if (boissonFavorite != null) {
-            stats.append("║ Boisson favorite : ").append(boissonFavorite.getNom());
-            padding = 38 - boissonFavorite.getNom().length();
-            for (int i = 0; i < padding; i++) {
-                stats.append(" ");
-            }
-            stats.append("║\n");
+            stats.append(String.format("║ Boisson favorite : %-38s║\n", boissonFavorite.getNom()));
         }
         
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         stats.append("║  STATISTIQUES DE TOURNOI                                  ║\n");
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
-        stats.append(String.format("║ Matchs joués : %d", matchsTournoiJoues));
-        String matchsStr = String.valueOf(matchsTournoiJoues);
-        padding = 43 - matchsStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
-        
-        stats.append(String.format("║ Victoires : %d", matchsTournoiGagnes));
-        String victoiresStr = String.valueOf(matchsTournoiGagnes);
-        padding = 46 - victoiresStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
-        
-        stats.append(String.format("║ Défaites : %d", matchsTournoiPerdus));
-        String defaitesStr = String.valueOf(matchsTournoiPerdus);
-        padding = 47 - defaitesStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
-        
-        stats.append(String.format("║ Points de tournoi : %d", pointsTournoi));
-        String pointsStr = String.valueOf(pointsTournoi);
-        padding = 38 - pointsStr.length();
-        for (int i = 0; i < padding; i++) {
-            stats.append(" ");
-        }
-        stats.append("║\n");
+        stats.append(String.format("║ Matchs joués : %-43s║\n", matchsTournoiJoues));
+        stats.append(String.format("║ Victoires : %-46s║\n", matchsTournoiGagnes));
+        stats.append(String.format("║ Défaites : %-47s║\n", matchsTournoiPerdus));
+        stats.append(String.format("║ Points de tournoi : %-38s║\n", pointsTournoi));
         
         // Calcul du taux de victoire
         if (matchsTournoiJoues > 0) {
             double tauxVictoire = (double) matchsTournoiGagnes / matchsTournoiJoues * 100;
-            stats.append(String.format("║ Taux de victoire : %.1f%%", tauxVictoire));
-            String tauxStr = String.format("%.1f%%", tauxVictoire);
-            padding = 39 - tauxStr.length();
-            for (int i = 0; i < padding; i++) {
-                stats.append(" ");
-            }
-            stats.append("║\n");
+            stats.append(String.format("║ Taux de victoire : %-39s║\n", 
+                                       String.format("%.1f%%", tauxVictoire)));
         }
         
         stats.append("╚═══════════════════════════════════════════════════════════╝\n");

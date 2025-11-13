@@ -17,6 +17,7 @@ public class Main {
     private static final Scanner scanner = new Scanner(System.in);
     private static Bar leBar;
     private static Tournoi tournoiEnCours;
+    private static Fournisseur fournisseur;
 
     public static void main(String[] args) {
         initialiserBar();
@@ -36,7 +37,7 @@ public class Main {
         int choix;
         do {
             afficherMenuPrincipal();
-            choix = lireChoixUtilisateur(0, 7);
+            choix = lireChoixUtilisateur(0, 8);
 
             switch (choix) {
                 case 1:
@@ -59,6 +60,9 @@ public class Main {
                     break;
                 case 7:
                     chargerEtatSimplifie("bar_state.txt");
+                    break;
+                case 8:
+                    actionsSpeciales();
                     break;
                 case 0:
                     System.out.println("Goodbye!");
@@ -147,6 +151,9 @@ public class Main {
             leBar.ajouterClient(client2);
         }
 
+        // Créer un fournisseur par défaut
+        fournisseur = new Fournisseur("Jacques", "Le Grossiste", 500.0, 30, "Boissons & Co");
+
         System.out.println("Bar initialized: " + (leBar != null ? leBar.getNom() : "N/A"));
         try {
             System.out.println("Total humans created: " + Human.getHumanCount());
@@ -163,9 +170,10 @@ public class Main {
         System.out.println("3. Order a drink");
         System.out.println("4. Manage Belote Tournament");
         System.out.println("5. View player statistics");
-        System.out.println("6. Save state (simplified)");
-        System.out.println("7. Load state (simplified)");
-        System.out.println("0. Exit");
+        System.out.println("6. Save");
+        System.out.println("7. Load");
+        System.out.println("8. Special actions");
+        System.out.println("0. Quit");
         System.out.print("Your choice: ");
     }
 
@@ -1003,5 +1011,391 @@ public class Main {
             System.out.println("Matchs perdus: " + joueur.getMatchsTournoiPerdus());
             System.out.println("Points tournoi: " + joueur.getPointsTournoi());
         }
+    }
+    
+    // ========== MENU ACTIONS SPÉCIALES ==========
+    
+    private static void actionsSpeciales() {
+        System.out.println("\n--- Actions Spéciales ---");
+        System.out.println("1. Actions de la Patronne");
+        System.out.println("2. Actions Sociales");
+        System.out.println("0. Retour");
+        System.out.print("Votre choix: ");
+        
+        int choix = lireChoixUtilisateur(0, 2);
+        
+        switch (choix) {
+            case 1:
+                actionsPatronne();
+                break;
+            case 2:
+                actionsSociales();
+                break;
+            case 0:
+                System.out.println("Retour au menu principal...");
+                break;
+            default:
+                System.out.println("Choix invalide.");
+                break;
+        }
+    }
+    
+    private static void actionsPatronne() {
+        System.out.println("\n--- Actions de la Patronne ---");
+        System.out.println("1. Récupérer l'argent de la Caisse");
+        System.out.println("2. Exclure un client");
+        System.out.println("0. Retour");
+        System.out.print("Votre choix: ");
+        
+        int choix = lireChoixUtilisateur(0, 2);
+        
+        switch (choix) {
+            case 1:
+                actionRecupererArgentCaisse();
+                break;
+            case 2:
+                actionExclureClient();
+                break;
+            case 0:
+                System.out.println("Retour...");
+                break;
+            default:
+                System.out.println("Choix invalide.");
+                break;
+        }
+    }
+    
+    private static void actionRecupererArgentCaisse() {
+        System.out.println("\n=== RÉCUPÉRER ARGENT DE LA CAISSE ===");
+        
+        if (leBar == null || leBar.getPatronne() == null) {
+            System.out.println("[!] Bar ou patronne non initialisé.");
+            return;
+        }
+        
+        Patron patronne = leBar.getPatronne();
+        Barman barman = leBar.getBarman();
+        
+        if (barman == null || barman.getCaisse() == null) {
+            System.out.println("[!] Pas de barman ou de caisse disponible.");
+            return;
+        }
+        
+        Caisse caisse = barman.getCaisse();
+        
+        System.out.println("Montant actuel dans la caisse: " + 
+                           String.format("%.2f", caisse.getMontantTotal()) + " euros");
+        System.out.println("Portefeuille de la patronne: " + 
+                           String.format("%.2f", patronne.getPorteMonnaie()) + " euros");
+        
+        System.out.print("\nMontant à récupérer (0 pour annuler): ");
+        double montant = lireDoubleUtilisateur("");
+        
+        if (montant <= 0) {
+            System.out.println("Opération annulée.");
+            return;
+        }
+        
+        patronne.recupererArgentCaisse(caisse, montant);
+    }
+    
+    private static void actionExclureClient() {
+        System.out.println("\n=== EXCLURE UN CLIENT ===");
+        
+        if (leBar == null || leBar.getPatronne() == null) {
+            System.out.println("[!] Bar ou patronne non initialisé.");
+            return;
+        }
+        
+        if (leBar.getClients().isEmpty()) {
+            System.out.println("Aucun client présent dans le bar.");
+            return;
+        }
+        
+        System.out.println("\nClients présents:");
+        int i = 1;
+        for (Client client : leBar.getClients()) {
+            System.out.println(i++ + ". " + client.getPrenom() + " '" + client.getSurnom() + "'");
+        }
+        System.out.println("0. Annuler");
+        
+        System.out.print("\nQuel client voulez-vous exclure? ");
+        int choix = lireChoixUtilisateur(0, leBar.getClients().size());
+        
+        if (choix == 0) {
+            System.out.println("Opération annulée.");
+            return;
+        }
+        
+        Client clientAExclure = leBar.getClients().get(choix - 1);
+        leBar.getPatronne().parler("Je suis désolée " + clientAExclure.getPrenom() + 
+                                    ", mais je dois vous demander de partir.");
+        clientAExclure.parler(clientAExclure.getCriSignificatif() + " D'accord, je pars...");
+        
+        leBar.getClients().remove(clientAExclure);
+        System.out.println("\n» " + clientAExclure.getPrenom() + " a été exclu(e) du bar.");
+    }
+    
+    private static void actionsSociales() {
+        System.out.println("\n--- Actions Sociales ---");
+        System.out.println("1. Offrir un verre");
+        System.out.println("2. Commander au Fournisseur");
+        System.out.println("0. Retour");
+        System.out.print("Votre choix: ");
+        
+        int choix = lireChoixUtilisateur(0, 2);
+        
+        switch (choix) {
+            case 1:
+                actionOffrirVerre();
+                break;
+            case 2:
+                actionCommanderFournisseur();
+                break;
+            case 0:
+                System.out.println("Retour...");
+                break;
+            default:
+                System.out.println("Choix invalide.");
+                break;
+        }
+    }
+    
+    private static void actionOffrirVerre() {
+        System.out.println("\n=== OFFRIR UN VERRE ===");
+        
+        if (leBar == null) {
+            System.out.println("[!] Bar non initialisé.");
+            return;
+        }
+        
+        // Créer une liste de tous les humains
+        List<Human> tousLesHumains = new ArrayList<>();
+        
+        // Ajouter la patronne
+        if (leBar.getPatronne() != null) {
+            tousLesHumains.add(leBar.getPatronne());
+        }
+        
+        // Ajouter le personnel
+        if (leBar.getPersonnel() != null) {
+            tousLesHumains.addAll(leBar.getPersonnel());
+        }
+        
+        // Ajouter les clients
+        if (leBar.getClients() != null) {
+            tousLesHumains.addAll(leBar.getClients());
+        }
+        
+        // Ajouter le fournisseur
+        if (fournisseur != null) {
+            tousLesHumains.add(fournisseur);
+        }
+        
+        if (tousLesHumains.size() < 2) {
+            System.out.println("[!] Pas assez de personnes pour offrir un verre.");
+            return;
+        }
+        
+        // Demander qui offre
+        System.out.println("\nQui offre ?");
+        for (int i = 0; i < tousLesHumains.size(); i++) {
+            Human h = tousLesHumains.get(i);
+            System.out.println((i + 1) + ". " + h.getPrenom() + " '" + h.getSurnom() + "' [" + 
+                             h.getClass().getSimpleName() + "] (" + 
+                             String.format("%.2f", h.getPorteMonnaie()) + " euros)");
+        }
+        System.out.println("0. Annuler");
+        
+        System.out.print("\nChoisissez celui qui offre: ");
+        int choixOffrant = lireChoixUtilisateur(0, tousLesHumains.size());
+        
+        if (choixOffrant == 0) {
+            System.out.println("État annulé.");
+            return;
+        }
+        
+        Human offrant = tousLesHumains.get(choixOffrant - 1);
+        
+        // Demander qui reçoit
+        System.out.println("\nQui reçoit ?");
+        for (int i = 0; i < tousLesHumains.size(); i++) {
+            Human h = tousLesHumains.get(i);
+            if (h != offrant) {
+                System.out.println((i + 1) + ". " + h.getPrenom() + " '" + h.getSurnom() + "' [" + 
+                                 h.getClass().getSimpleName() + "]");
+            }
+        }
+        System.out.println("0. Annuler");
+        
+        System.out.print("\nChoisissez celui qui reçoit: ");
+        int choixReceveur = lireChoixUtilisateur(0, tousLesHumains.size());
+        
+        if (choixReceveur == 0) {
+            System.out.println("État annulé.");
+            return;
+        }
+        
+        Human receveur = tousLesHumains.get(choixReceveur - 1);
+        
+        if (offrant == receveur) {
+            System.out.println("[!] Une personne ne peut pas s'offrir un verre à elle-même !");
+            return;
+        }
+        
+        // Demander quelle boisson
+        System.out.println("\nQuelle boisson ?");
+        List<Boisson> boissonsMenu = (leBar != null) ? leBar.getConsommationsProposees() : Collections.emptyList();
+        
+        if (boissonsMenu == null || boissonsMenu.isEmpty()) {
+            System.out.println("[!] Aucune boisson disponible.");
+            return;
+        }
+        
+        for (int i = 0; i < boissonsMenu.size(); i++) {
+            Boisson b = boissonsMenu.get(i);
+            System.out.println((i + 1) + ". " + b.getNom() + " (" + 
+                             String.format("%.2f", b.getPrixVente()) + " euros)");
+        }
+        System.out.println("0. Annuler");
+        
+        System.out.print("\nChoisissez une boisson: ");
+        int choixBoisson = lireChoixUtilisateur(0, boissonsMenu.size());
+        
+        if (choixBoisson == 0) {
+            System.out.println("État annulé.");
+            return;
+        }
+        
+        Boisson boissonChoisie = boissonsMenu.get(choixBoisson - 1);
+        Barman barman = (leBar != null) ? leBar.getBarman() : null;
+        
+        if (barman == null) {
+            System.out.println("[!] Pas de barman disponible pour servir.");
+            return;
+        }
+        
+        // Gérer la transaction
+        try {
+            System.out.println("\n--- Transaction en cours ---");
+            offrant.parler("Je t'offre un verre, " + receveur.getPrenom() + " !");
+            
+            // Le barman sert la boisson
+            barman.servirBoisson(boissonChoisie);
+            
+            // L'offrant paie
+            barman.recevoirPaiement(offrant, boissonChoisie.getPrixVente());
+            
+            // Le receveur boit (seulement si c'est un Client)
+            if (receveur instanceof Client) {
+                ((Client) receveur).boire(boissonChoisie);
+            } else {
+                receveur.parler("Merci " + offrant.getPrenom() + " ! Santé !");
+            }
+            
+            System.out.println("\n» " + offrant.getPrenom() + " a offert un " + boissonChoisie.getNom() + 
+                             " à " + receveur.getPrenom() + " !");
+            
+        } catch (OutOfStockException | NotEnoughMoneyException e) {
+            System.err.println("[!] Transaction échouée: " + e.getMessage());
+            barman.parler("Désolé, je ne peux pas servir...");
+        } catch (Exception e) {
+            System.err.println("[!] Erreur inattendue: " + e.getMessage());
+        }
+    }
+    
+    private static void actionCommanderFournisseur() {
+        System.out.println("\n=== COMMANDER AU FOURNISSEUR ===");
+        
+        if (leBar == null || leBar.getPatronne() == null) {
+            System.out.println("[!] Bar ou patronne non initialisé.");
+            return;
+        }
+        
+        if (fournisseur == null) {
+            System.out.println("[!] Aucun fournisseur disponible.");
+            return;
+        }
+        
+        Barman barman = leBar.getBarman();
+        if (barman == null) {
+            System.out.println("[!] Pas de barman disponible.");
+            return;
+        }
+        
+        Patron patronne = leBar.getPatronne();
+        
+        // Afficher les boissons disponibles
+        System.out.println("\nQuelle boisson commander ?");
+        List<Boisson> boissonsMenu = (leBar != null) ? leBar.getConsommationsProposees() : Collections.emptyList();
+        
+        if (boissonsMenu == null || boissonsMenu.isEmpty()) {
+            System.out.println("[!] Aucune boisson disponible au catalogue.");
+            return;
+        }
+        
+        for (int i = 0; i < boissonsMenu.size(); i++) {
+            Boisson b = boissonsMenu.get(i);
+            int stockActuel = barman.getStock().getOrDefault(b, 0);
+            System.out.println((i + 1) + ". " + b.getNom() + " - Prix d'achat: " + 
+                             String.format("%.2f", b.getPrixAchat()) + " euros (Stock actuel: " + 
+                             stockActuel + ")");
+        }
+        System.out.println("0. Annuler");
+        
+        System.out.print("\nChoisissez une boisson: ");
+        int choixBoisson = lireChoixUtilisateur(0, boissonsMenu.size());
+        
+        if (choixBoisson == 0) {
+            System.out.println("Opération annulée.");
+            return;
+        }
+        
+        Boisson boissonChoisie = boissonsMenu.get(choixBoisson - 1);
+        
+        // Demander la quantité
+        System.out.print("\nQuelle quantité commander ? ");
+        int quantite = (int) lireDoubleUtilisateur("");
+        
+        if (quantite <= 0) {
+            System.out.println("[!] Quantité invalide.");
+            return;
+        }
+        
+        // Calculer le coût total
+        double coutTotal = boissonChoisie.getPrixAchat() * quantite;
+        
+        System.out.println("\nRécapitulatif de la commande:");
+        System.out.println("Boisson: " + boissonChoisie.getNom());
+        System.out.println("Quantité: " + quantite);
+        System.out.println("Coût total: " + String.format("%.2f", coutTotal) + " euros");
+        System.out.println("\nPortefeuille de la patronne: " + 
+                         String.format("%.2f", patronne.getPorteMonnaie()) + " euros");
+        
+        if (patronne.getPorteMonnaie() < coutTotal) {
+            System.out.println("\n[!] La patronne n'a pas assez d'argent pour payer cette commande !");
+            return;
+        }
+        
+        System.out.print("\nConfirmer la commande ? (oui/non): ");
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+        
+        if (!confirmation.equals("oui") && !confirmation.equals("o") && !confirmation.equals("y") && !confirmation.equals("yes")) {
+            System.out.println("Commande annulée.");
+            return;
+        }
+        
+        // Exécuter la commande
+        System.out.println("\n--- Commande en cours ---");
+        
+        // Le barman passe commande
+        barman.passerCommande(fournisseur, boissonChoisie, quantite);
+        
+        // La patronne paie le fournisseur
+        patronne.payerFournisseur(fournisseur, coutTotal);
+        
+        System.out.println("\n» Commande effectuée avec succès !");
+        System.out.println("Nouveau stock de " + boissonChoisie.getNom() + ": " + 
+                         barman.getStock().get(boissonChoisie) + " unités");
     }
 }

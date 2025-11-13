@@ -1,6 +1,13 @@
 package com.pub.characters;
 
-public class Human {
+/**
+ * Classe abstraite représentant un être humain dans le système du bar.
+ * Cette classe sert de base pour tous les personnages (Client, Serveur, Serveuse, Barman, Patron, Fournisseur).
+ * 
+ * <p>Un Human possède des attributs de base (nom, argent, popularité) et des statistiques
+ * de tournoi communes à tous les personnages pouvant participer à des jeux.</p>
+ */
+public abstract class Human {
     private static int humanCount = 0;
     
     private String prenom;
@@ -14,6 +21,14 @@ public class Human {
     protected int matchsTournoiPerdus;
     protected int pointsTournoi;
     
+    /**
+     * Constructeur de base pour tous les humains.
+     * 
+     * @param prenom Le prénom du personnage
+     * @param surnom Le surnom du personnage
+     * @param porteMonnaie Le montant d'argent initial
+     * @param popularite Le niveau de popularité initial
+     */
     public Human(String prenom, String surnom, double porteMonnaie, int popularite) {
         this.prenom = prenom;
         this.surnom = surnom;
@@ -62,13 +77,20 @@ public class Human {
         return humanCount;
     }
     
+    /**
+     * Permet au personnage de parler (afficher un message).
+     * 
+     * @param message Le message à afficher
+     */
     public void parler(String message) {
         System.out.println(prenom + ": " + message);
     }
     
-    public void sePresenter() {
-        parler("Hi! I am " + prenom + " called '" + surnom + "'.");
-    }
+    /**
+     * Méthode abstraite pour se présenter.
+     * Chaque sous-classe doit implémenter sa propre manière de se présenter.
+     */
+    public abstract void sePresenter();
     
     public boolean payer(double montant) {
         if (porteMonnaie >= montant) {

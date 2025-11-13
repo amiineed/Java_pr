@@ -55,6 +55,35 @@ public class Barman extends Human {
         recevoirArgent(montant * 0.1); // Le barman garde 10% de pourboire
     }
     
+    /**
+     * Passe une commande auprès d'un fournisseur pour remplir le stock.
+     * 
+     * @param fournisseur Le fournisseur auprès duquel commander
+     * @param boisson La boisson à commander
+     * @param quantite La quantité à commander
+     */
+    public void passerCommande(Fournisseur fournisseur, Boisson boisson, int quantite) {
+        if (fournisseur == null || boisson == null || quantite <= 0) {
+            parler("Commande invalide!");
+            return;
+        }
+        
+        parler("Je passe commande de " + quantite + " unités de " + boisson.getNom() + " auprès de " + fournisseur.getPrenom() + ".");
+        
+        // Le fournisseur effectue la livraison
+        fournisseur.livrerBoisson(boisson.getNom(), quantite);
+        
+        // Mise à jour du stock
+        if (stock == null) {
+            stock = new java.util.HashMap<>();
+        }
+        
+        int stockActuel = stock.getOrDefault(boisson, 0);
+        stock.put(boisson, stockActuel + quantite);
+        
+        parler("Stock mis à jour ! Nous avons maintenant " + stock.get(boisson) + " unités de " + boisson.getNom() + ".");
+    }
+    
     @Override
     public void sePresenter() {
         parler("Salut! Je suis " + getPrenom() + " '" + getSurnom() + "', votre barman attitré!");
