@@ -28,6 +28,23 @@ public class Client extends Human implements JoueurBelote {
         this.nombreVerresConsommes = 0;
     }
     
+    /**
+     * Constructeur de copie pour un Client.
+     * @param other Le client à copier.
+     */
+    public Client(Client other) {
+        super(other.getPrenom(), other.getSurnom(), other.getPorteMonnaie(), other.getPopularite(), other.getCriSignificatif());
+        this.boissonFavorite = other.boissonFavorite;
+        this.boissonFavoriteSecours = other.boissonFavoriteSecours;
+        this.boissonActuelle = other.boissonActuelle;
+        this.niveauAlcoolemie = other.niveauAlcoolemie;
+        this.identifiantGenre = other.identifiantGenre;
+        this.genre = other.genre;
+        this.nombreVerresConsommes = other.nombreVerresConsommes;
+        this.setNiveauBelote(other.getNiveauBelote());
+        // Note: Tournament stats are intentionally not copied.
+    }
+    
     public Boisson getBoissonFavorite() {
         return boissonFavorite;
     }
@@ -66,6 +83,14 @@ public class Client extends Human implements JoueurBelote {
     
     public void setIdentifiantGenre(String identifiantGenre) {
         this.identifiantGenre = identifiantGenre;
+    }
+    
+    public String getGenre() {
+        return genre;
+    }
+    
+    public void setGenre(String genre) {
+        this.genre = genre;
     }
     
     @Override

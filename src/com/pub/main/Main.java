@@ -409,12 +409,48 @@ public class Main {
             System.out.println("No barman available to serve.");
             return;
         }
+        
+        // Determine who is serving
+        Human serveurDuMoment = null;
+        if (leBar.getPersonnel() != null && !leBar.getPersonnel().isEmpty()) {
+            List<Human> staffActif = new ArrayList<>();
+            for (Human p : leBar.getPersonnel()) {
+                if (p instanceof Serveur || p instanceof Serveuse) {
+                    staffActif.add(p);
+                }
+            }
+            if (!staffActif.isEmpty()) {
+                serveurDuMoment = staffActif.get(new Random().nextInt(staffActif.size()));
+                System.out.println("» " + serveurDuMoment.getPrenom() + " brings the drink.");
+            }
+        }
 
         try {
             barman.servirBoisson(boissonChoisie);
             barman.recevoirPaiement(client, boissonChoisie.getPrixVente());
             client.boire(boissonChoisie);
             System.out.println(client.getPrenom() + " received and paid for " + boissonChoisie.getNom());
+            
+            // --- Staff Influence Logic ---
+            if (serveurDuMoment instanceof Serveuse) {
+                Serveuse s = (Serveuse) serveurDuMoment;
+                if (s.getNiveauCharme() >= 8) { // High charm
+                    client.parler(s.getPrenom() + " is so charming! I'll have another one.");
+                    try {
+                        barman.servirBoisson(boissonChoisie); // Order the same drink again
+                        barman.recevoirPaiement(client, boissonChoisie.getPrixVente());
+                        client.boire(boissonChoisie);
+                    } catch (Exception e2) {
+                        client.parler("Oh, nevermind then...");
+                    }
+                }
+            } else if (serveurDuMoment instanceof Serveur && boissonChoisie instanceof BoissonAlcoolisee) {
+                Serveur s = (Serveur) serveurDuMoment;
+                if (s.getTailleBiceps() >= 15) { // Strong server
+                    client.parler("This server " + s.getPrenom() + " looks tough... I'll behave.");
+                }
+            }
+            // --- End of Staff Influence Logic ---
         } catch (OutOfStockException e) {
             System.err.println("Order failed: " + e.getMessage());
             if (barman != null) barman.parler("Sorry " + client.getPrenom() + "...");
@@ -469,10 +505,11 @@ public class Main {
         System.out.println("7. Afficher les équipes inscrites");
         System.out.println("8. Inscrire équipes auto");
         System.out.println("9. Afficher la synthèse");
+        System.out.println("10. Détail des matchs");
         System.out.println("0. Retour");
         System.out.print("Votre choix: ");
 
-        int choix = lireChoixUtilisateur(0, 9);
+        int choix = lireChoixUtilisateur(0, 10);
 
         switch (choix) {
             case 1:
@@ -501,6 +538,9 @@ public class Main {
                 break;
             case 9:
                 afficherSyntheseTournoi();
+                break;
+            case 10:
+                afficherDetailsMatchs();
                 break;
             case 0:
                 break;
@@ -808,6 +848,42 @@ public class Main {
         tournoiEnCours.getFeuilleDeScore().afficherClassement();
         
         System.out.println("=".repeat(60));
+    }
+    
+    /**
+     * Affiche le détail des scores de tous les matchs joués.
+     */
+    private static void afficherDetailsMatchs() {
+        if (tournoiEnCours == null || tournoiEnCours.getCalendrierDesMatchs().isEmpty()) {
+            System.out.println("[!] No tournament started or no matches scheduled.");
+            return;
+        }
+
+        System.out.println("\n=== DETAIL OF COMPLETED MATCHES ===");
+
+        boolean aucunMatchJoue = true;
+        List<Tournoi.Match> calendrier = tournoiEnCours.getCalendrierDesMatchs();
+
+        for (Tournoi.Match match : calendrier) {
+            if (match.isJoue()) {
+                aucunMatchJoue = false;
+                Equipe e1 = match.getEquipe1();
+                Equipe e2 = match.getEquipe2();
+                Equipe gagnant = match.getGagnant();
+
+                String nomE1 = e1.getNom() + (e1.equals(gagnant) ? " (Winner)" : "");
+                String nomE2 = e2.getNom() + (e2.equals(gagnant) ? " (Winner)" : "");
+
+                System.out.printf(" - Match: %s vs %s\n", e1.getNom(), e2.getNom());
+                System.out.printf("   Result: %s [%d] - %s [%d]\n\n", 
+                                 nomE1, match.getGagnant().equals(e1) ? match.getScoreGagnant() : match.getScorePerdant(), 
+                                 nomE2, match.getGagnant().equals(e2) ? match.getScoreGagnant() : match.getScorePerdant());
+            }
+        }
+
+        if (aucunMatchJoue) {
+            System.out.println("[!] No matches have been played yet.");
+        }
     }
 
     /**
@@ -1403,10 +1479,11 @@ public class Main {
         System.out.println("\n--- Actions de la Patronne ---");
         System.out.println("1. Récupérer l'argent de la Caisse");
         System.out.println("2. Exclure un client");
+        System.out.println("3. Changer genre client");
         System.out.println("0. Retour");
         System.out.print("Votre choix: ");
         
-        int choix = lireChoixUtilisateur(0, 2);
+        int choix = lireChoixUtilisateur(0, 3);
         
         switch (choix) {
             case 1:
@@ -1414,6 +1491,9 @@ public class Main {
                 break;
             case 2:
                 actionExclureClient();
+                break;
+            case 3:
+                actionChangerGenreClient();
                 break;
             case 0:
                 System.out.println("Retour...");
@@ -1499,6 +1579,44 @@ public class Main {
         
         leBar.getClients().remove(clientAExclure);
         System.out.println("\n» " + clientAExclure.getPrenom() + " a été exclu(e) du bar.");
+    }
+    
+    /**
+     * Permet de modifier le genre et l'identifiant de genre d'un client.
+     */
+    private static void actionChangerGenreClient() {
+        System.out.println("\n=== CHANGE CLIENT GENDER ===");
+        if (leBar == null || leBar.getClients().isEmpty()) {
+            System.out.println("[!] No clients in the bar.");
+            return;
+        }
+
+        // Afficher les clients
+        List<Client> clients = leBar.getClients();
+        for (int i = 0; i < clients.size(); i++) {
+            System.out.println((i + 1) + ". " + clients.get(i).getPrenom() + " (Genre ID: " + clients.get(i).getIdentifiantGenre() + ")");
+        }
+        System.out.println("0. Cancel");
+
+        System.out.print("Who do you want to modify? ");
+        int choix = lireChoixUtilisateur(0, clients.size());
+        if (choix == 0) return;
+
+        Client client = clients.get(choix - 1);
+
+        // Inverser le genre
+        if ("homme".equalsIgnoreCase(client.getGenre())) {
+            client.setGenre("femme");
+            String bijoux = lireStringUtilisateur("New jewelry: ");
+            client.setIdentifiantGenre(bijoux);
+            client.parler("I feel fabulous with my new " + bijoux + "!");
+        } else {
+            client.setGenre("homme");
+            String tshirt = lireStringUtilisateur("New t-shirt color: ");
+            client.setIdentifiantGenre(tshirt);
+            client.parler("This " + tshirt + " t-shirt looks great on me!");
+        }
+        System.out.println("» " + client.getPrenom() + "'s gender has been updated.");
     }
     
     /**

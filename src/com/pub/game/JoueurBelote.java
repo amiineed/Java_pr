@@ -5,4 +5,11 @@ package com.pub.game;
  * Implémentée par Client, Serveur, et Serveuse.
  */
 public interface JoueurBelote {
+    /**
+     * Gets the role of the player in the game.
+     * @return The role (default is "Joueur")
+     */
+    default String getRoleJoueur() {
+        return "Joueur";
+    }
 }

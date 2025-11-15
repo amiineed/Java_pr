@@ -123,6 +123,9 @@ public class PartieDeBelote {
         this.nombreCartesJouees = 0;
     }
     
+    public int getScoreEquipe1() { return scoreEquipe1; }
+    public int getScoreEquipe2() { return scoreEquipe2; }
+    
     /**
      * Démarre une partie complète de Belote (jusqu'à 1010 points)
      * @return L'équipe gagnante

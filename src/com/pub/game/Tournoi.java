@@ -26,10 +26,13 @@ public class Tournoi {
     /**
      * Classe interne représentant un match entre deux équipes
      */
-    private static class Match {
+    public static class Match {
         private final Equipe equipe1;
         private final Equipe equipe2;
         private boolean joue;
+        private Equipe gagnant;
+        private int scoreGagnant;
+        private int scorePerdant;
         
         public Match(Equipe equipe1, Equipe equipe2) {
             this.equipe1 = equipe1;
@@ -51,6 +54,25 @@ public class Tournoi {
         
         public void setJoue(boolean joue) {
             this.joue = joue;
+        }
+        
+        public Equipe getGagnant() {
+            return gagnant;
+        }
+        
+        public int getScoreGagnant() {
+            return scoreGagnant;
+        }
+        
+        public int getScorePerdant() {
+            return scorePerdant;
+        }
+        
+        public void setResultat(Equipe gagnant, int scoreGagnant, int scorePerdant) {
+            this.joue = true;
+            this.gagnant = gagnant;
+            this.scoreGagnant = scoreGagnant;
+            this.scorePerdant = scorePerdant;
         }
     }
     
@@ -253,6 +275,10 @@ public class Tournoi {
         
         Equipe equipeGagnante = partie.demarrerPartie();
         
+        // Récupérer les scores finaux de la partie
+        int score1 = partie.getScoreEquipe1();
+        int score2 = partie.getScoreEquipe2();
+        
         // Enregistrer le résultat
         if (equipeGagnante.equals(equipe1)) {
             equipe1.enregistrerMatch(true);
@@ -278,6 +304,7 @@ public class Tournoi {
             }
             
             feuilleDeScore.ajouterResultat(equipe1.getNom() + " bat " + equipe2.getNom());
+            prochainMatch.setResultat(equipe1, score1, score2);
         } else {
             equipe1.enregistrerMatch(false);
             equipe2.enregistrerMatch(true);
@@ -302,10 +329,10 @@ public class Tournoi {
             }
             
             feuilleDeScore.ajouterResultat(equipe2.getNom() + " bat " + equipe1.getNom());
+            prochainMatch.setResultat(equipe2, score2, score1);
         }
         
-        // Marquer le match comme joué
-        prochainMatch.setJoue(true);
+        // Marquer le match comme joué est déjà fait par setResultat()
         
         return true;
     }
@@ -549,6 +576,10 @@ public class Tournoi {
     
     public List<Equipe> getEquipesInscrites() {
         return new ArrayList<>(equipesInscrites);
+    }
+    
+    public List<Match> getCalendrierDesMatchs() {
+        return calendrierDesMatchs;
     }
     
     public double getFraisInscription() {
