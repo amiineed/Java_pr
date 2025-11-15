@@ -85,10 +85,11 @@ public class Bar {
      * Cherche une table disponible pour asseoir le client.
      * 
      * @param client Le client à ajouter
+     * @return true si le client a été ajouté avec succès, false sinon
      */
-    public void ajouterClient(Client client) {
+    public boolean ajouterClient(Client client) {
         if (client == null || clients.contains(client)) {
-            return;
+            return false;
         }
         
         // Chercher une table avec de la place
@@ -97,13 +98,14 @@ public class Bar {
                 if (table.ajouterClient(client)) {
                     clients.add(client);
                     System.out.println("» " + client.getPrenom() + " a été installé(e) à une table.");
-                    return;
+                    return true;
                 }
             }
         }
         
         // Si aucune table n'est disponible
         System.out.println("[!] Le bar est plein, impossible d'ajouter " + client.getPrenom());
+        return false;
     }
     
     /**

@@ -30,6 +30,12 @@ public class Barman extends Human {
         this.caisse = caisse;
     }
     
+    /**
+     * Sert une boisson en décrémentant le stock.
+     * 
+     * @param boisson La boisson à servir
+     * @throws OutOfStockException Si la boisson n'est pas disponible ou en rupture de stock
+     */
     public void servirBoisson(Boisson boisson) throws OutOfStockException {
         if (stock == null || !stock.containsKey(boisson)) {
             throw new OutOfStockException("Boisson non disponible: " + boisson.getNom());
@@ -43,6 +49,13 @@ public class Barman extends Human {
         stock.put(boisson, quantite - 1);
     }
     
+    /**
+     * Reçoit le paiement d'un client pour une boisson.
+     * 
+     * @param client Le client qui paie
+     * @param montant Le montant à payer
+     * @throws NotEnoughMoneyException Si le client n'a pas assez d'argent
+     */
     public void recevoirPaiement(Human client, double montant) throws NotEnoughMoneyException {
         if (!client.payer(montant)) {
             throw new NotEnoughMoneyException(client.getPrenom() + " n'a pas assez d'argent!");

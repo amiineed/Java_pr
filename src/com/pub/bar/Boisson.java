@@ -34,6 +34,11 @@ public class Boisson {
         return nom;
     }
     
+    /**
+     * Définit le nom de la boisson.
+     * 
+     * @param nom Le nouveau nom de la boisson
+     */
     public void setNom(String nom) {
         this.nom = nom;
     }
@@ -47,6 +52,11 @@ public class Boisson {
         return prixAchat;
     }
     
+    /**
+     * Définit le prix d'achat de la boisson.
+     * 
+     * @param prixAchat Le nouveau prix d'achat en euros
+     */
     public void setPrixAchat(double prixAchat) {
         this.prixAchat = prixAchat;
     }
@@ -60,6 +70,11 @@ public class Boisson {
         return prixVente;
     }
     
+    /**
+     * Définit le prix de vente de la boisson.
+     * 
+     * @param prixVente Le nouveau prix de vente en euros
+     */
     public void setPrixVente(double prixVente) {
         this.prixVente = prixVente;
     }

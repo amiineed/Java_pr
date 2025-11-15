@@ -65,16 +65,29 @@ public class Tournoi {
         this.calendrierDesMatchs = new ArrayList<>();
     }
     
+    /**
+     * Ouvre les inscriptions pour le tournoi.
+     */
     public void ouvrirInscriptions() {
         this.inscriptionsOuvertes = true;
         System.out.println("Les inscriptions pour le tournoi sont maintenant ouvertes!");
     }
     
+    /**
+     * Ferme les inscriptions pour le tournoi.
+     */
     public void fermerInscriptions() {
         this.inscriptionsOuvertes = false;
         System.out.println("Les inscriptions pour le tournoi sont maintenant fermées.");
     }
     
+    /**
+     * Inscrit une équipe au tournoi.
+     * 
+     * @param nomEquipe Le nom de l'équipe
+     * @param joueur1 Le premier joueur de l'équipe
+     * @param joueur2 Le deuxième joueur de l'équipe
+     */
     public void inscrireEquipe(String nomEquipe, Human joueur1, Human joueur2) {
         if (!inscriptionsOuvertes) {
             System.out.println("Les inscriptions ne sont pas ouvertes!");
@@ -154,6 +167,9 @@ public class Tournoi {
         System.out.println("Équipe '" + nomEquipe + "' inscrite avec succès!");
     }
     
+    /**
+     * Démarre le tournoi et génère le calendrier des matchs.
+     */
     public void demarrerTournoi() {
         if (equipesInscrites.size() < 2) {
             System.out.println("Pas assez d'équipes pour démarrer le tournoi (minimum 2 requis)!");
@@ -345,6 +361,9 @@ public class Tournoi {
         }
     }
     
+    /**
+     * Affiche toutes les équipes inscrites au tournoi.
+     */
     public void afficherEquipesInscrites() {
         System.out.println("\n=== ÉQUIPES INSCRITES ===");
         if (equipesInscrites.isEmpty()) {
