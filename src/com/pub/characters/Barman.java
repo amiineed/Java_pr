@@ -9,7 +9,7 @@ public class Barman extends Human {
     private Caisse caisse;
     
     public Barman(String prenom, String surnom, double porteMonnaie, Map<Boisson, Integer> stock, Caisse caisse) {
-        super(prenom, surnom, porteMonnaie, 50);
+        super(prenom, surnom, porteMonnaie, 50, "Hey !");
         this.stock = stock;
         this.caisse = caisse;
     }
@@ -82,6 +82,25 @@ public class Barman extends Human {
         stock.put(boisson, stockActuel + quantite);
         
         parler("Stock mis à jour ! Nous avons maintenant " + stock.get(boisson) + " unités de " + boisson.getNom() + ".");
+    }
+    
+    @Override
+    public void parler(String message) {
+        super.parler(message + ", coco.");
+    }
+    
+    @Override
+    public void boire(Boisson boisson) {
+        if (boisson == null) {
+            parler("Je n'ai rien à boire");
+            return;
+        }
+        
+        if (boisson instanceof BoissonAlcoolisee) {
+            parler("Je ne bois pas d'alcool en service");
+        } else {
+            super.boire(boisson);
+        }
     }
     
     @Override

@@ -1,13 +1,14 @@
 package com.pub.characters;
 
 import com.pub.bar.Boisson;
+import com.pub.bar.BoissonAlcoolisee;
 import com.pub.game.JoueurBelote;
 
 public class Client extends Human implements JoueurBelote {
     private Boisson boissonFavorite;
+    private Boisson boissonFavoriteSecours;
     private Boisson boissonActuelle;
     private double niveauAlcoolemie;
-    private String criSignificatif;
     private String identifiantGenre;
     private String genre;
     
@@ -15,12 +16,12 @@ public class Client extends Human implements JoueurBelote {
     private int nombreVerresConsommes;
     
     public Client(String prenom, String surnom, double porteMonnaie, int popularite, 
-                  String criSignificatif, Boisson boissonFavorite, Boisson boissonActuelle, String identifiantGenre, String genre) {
-        super(prenom, surnom, porteMonnaie, popularite);
+                  String criSignificatif, Boisson boissonFavorite, Boisson boissonFavoriteSecours, Boisson boissonActuelle, String identifiantGenre, String genre) {
+        super(prenom, surnom, porteMonnaie, popularite, criSignificatif);
         this.boissonFavorite = boissonFavorite;
+        this.boissonFavoriteSecours = boissonFavoriteSecours;
         this.boissonActuelle = boissonActuelle;
         this.niveauAlcoolemie = 0.0;
-        this.criSignificatif = criSignificatif;
         this.identifiantGenre = identifiantGenre;
         this.genre = genre;
         // Initialisation des statistiques de consommation
@@ -33,6 +34,14 @@ public class Client extends Human implements JoueurBelote {
     
     public void setBoissonFavorite(Boisson boissonFavorite) {
         this.boissonFavorite = boissonFavorite;
+    }
+    
+    public Boisson getBoissonFavoriteSecours() {
+        return boissonFavoriteSecours;
+    }
+    
+    public void setBoissonFavoriteSecours(Boisson boissonFavoriteSecours) {
+        this.boissonFavoriteSecours = boissonFavoriteSecours;
     }
     
     public Boisson getBoissonActuelle() {
@@ -51,14 +60,6 @@ public class Client extends Human implements JoueurBelote {
         this.niveauAlcoolemie = niveauAlcoolemie;
     }
     
-    public String getCriSignificatif() {
-        return criSignificatif;
-    }
-    
-    public void setCriSignificatif(String criSignificatif) {
-        this.criSignificatif = criSignificatif;
-    }
-    
     public String getIdentifiantGenre() {
         return identifiantGenre;
     }
@@ -67,14 +68,25 @@ public class Client extends Human implements JoueurBelote {
         this.identifiantGenre = identifiantGenre;
     }
     
+    @Override
     public void boire(Boisson boisson) {
+        if (boisson == null) {
+            parler("Je n'ai rien à boire.");
+            return;
+        }
         this.boissonActuelle = boisson;
         this.nombreVerresConsommes++;
-        if (boisson instanceof com.pub.bar.BoissonAlcoolisee) {
-            com.pub.bar.BoissonAlcoolisee boissonAlcoolisee = (com.pub.bar.BoissonAlcoolisee) boisson;
+        if (boisson instanceof BoissonAlcoolisee) {
+            BoissonAlcoolisee boissonAlcoolisee = (BoissonAlcoolisee) boisson;
             this.niveauAlcoolemie += boissonAlcoolisee.getDegreAlcool() * 0.01;
         }
-        parler(criSignificatif + " Ça fait du bien!");
+        String cri = getCriSignificatif();
+        if (cri == null || cri.isEmpty()) {
+            cri = "";
+        } else {
+            cri = cri + " ";
+        }
+        parler(cri + "Ça fait du bien!");
     }
     
     // Getters et setters pour les statistiques
@@ -163,6 +175,19 @@ public class Client extends Human implements JoueurBelote {
         stats.append("╚═══════════════════════════════════════════════════════════╝\n");
         
         return stats.toString();
+    }
+    
+    public void parler(String message, Human destinataire) {
+        if (destinataire != null && genre != null) {
+            if (this.niveauAlcoolemie > 0.8) {
+                if ("homme".equalsIgnoreCase(genre) && destinataire instanceof Serveuse) {
+                    message = message + " ma jolie !";
+                } else if ("femme".equalsIgnoreCase(genre) && destinataire instanceof Serveur) {
+                    message = message + " mon beau !";
+                }
+            }
+        }
+        super.parler(message);
     }
     
     @Override

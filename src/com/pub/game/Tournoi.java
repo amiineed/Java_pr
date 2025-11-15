@@ -1,6 +1,7 @@
 package com.pub.game;
 
 import com.pub.bar.Bar;
+import com.pub.bar.Boisson;
 import com.pub.bar.Caisse;
 import com.pub.characters.Barman;
 import com.pub.characters.Client;
@@ -245,6 +246,21 @@ public class Tournoi {
             equipe1.getJoueur2().enregistrerMatchTournoi(true);
             equipe2.getJoueur1().enregistrerMatchTournoi(false);
             equipe2.getJoueur2().enregistrerMatchTournoi(false);
+            
+            // Gain de popularité pour les gagnants
+            equipe1.getJoueur1().setPopularite(equipe1.getJoueur1().getPopularite() + 5);
+            equipe1.getJoueur2().setPopularite(equipe1.getJoueur2().getPopularite() + 5);
+            
+            // Les perdants offrent des verres aux gagnants
+            Barman barman = bar.getBarman();
+            Boisson biere = bar.trouverBoisson("Beer");
+            
+            if (barman != null && biere != null) {
+                System.out.println("\n--- Après-match : Les perdants offrent des verres ---");
+                equipe2.getJoueur1().offrirVerre(equipe1.getJoueur1(), biere, barman);
+                equipe2.getJoueur2().offrirVerre(equipe1.getJoueur2(), biere, barman);
+            }
+            
             feuilleDeScore.ajouterResultat(equipe1.getNom() + " bat " + equipe2.getNom());
         } else {
             equipe1.enregistrerMatch(false);
@@ -254,6 +270,21 @@ public class Tournoi {
             equipe1.getJoueur2().enregistrerMatchTournoi(false);
             equipe2.getJoueur1().enregistrerMatchTournoi(true);
             equipe2.getJoueur2().enregistrerMatchTournoi(true);
+            
+            // Gain de popularité pour les gagnants
+            equipe2.getJoueur1().setPopularite(equipe2.getJoueur1().getPopularite() + 5);
+            equipe2.getJoueur2().setPopularite(equipe2.getJoueur2().getPopularite() + 5);
+            
+            // Les perdants offrent des verres aux gagnants
+            Barman barman = bar.getBarman();
+            Boisson biere = bar.trouverBoisson("Beer");
+            
+            if (barman != null && biere != null) {
+                System.out.println("\n--- Après-match : Les perdants offrent des verres ---");
+                equipe1.getJoueur1().offrirVerre(equipe2.getJoueur1(), biere, barman);
+                equipe1.getJoueur2().offrirVerre(equipe2.getJoueur2(), biere, barman);
+            }
+            
             feuilleDeScore.ajouterResultat(equipe2.getNom() + " bat " + equipe1.getNom());
         }
         

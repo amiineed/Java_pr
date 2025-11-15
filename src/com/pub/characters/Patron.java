@@ -1,7 +1,10 @@
 package com.pub.characters;
 
-import com.pub.exceptions.BarException;
+import com.pub.bar.Boisson;
 import com.pub.bar.Caisse;
+import com.pub.exceptions.BarException;
+import com.pub.exceptions.NotEnoughMoneyException;
+import com.pub.exceptions.OutOfStockException;
 
 /**
  * Représente le patron/la patronne du bar.
@@ -12,7 +15,7 @@ import com.pub.bar.Caisse;
 public class Patron extends Human {
     
     public Patron(String prenom, String surnom, double porteMonnaie) throws BarException {
-        super(prenom, surnom, porteMonnaie, 100);
+        super(prenom, surnom, porteMonnaie, 100, "Bonjour.");
         if (porteMonnaie < 500) {
             throw new BarException("Le patron doit avoir au moins 500 euros pour démarrer un bar!");
         }
@@ -62,6 +65,23 @@ public class Patron extends Human {
         } else {
             parler("Pas assez d'argent dans la caisse pour retirer " + montant + " euros!");
             return false;
+        }
+    }
+    
+    @Override
+    public void offrirVerre(Human receveur, Boisson boisson, Barman barman) {
+        if (receveur == null || boisson == null || barman == null) {
+            parler("Impossible d'offrir un verre pour le moment.");
+            return;
+        }
+        this.parler("Je t'offre un " + boisson.getNom() + ", " + receveur.getPrenom() + " !");
+        try {
+            barman.servirBoisson(boisson);
+            // La patronne ne paie pas - ligne supprimée : barman.recevoirPaiement(this, boisson.getPrixVente());
+            receveur.boire(boisson);
+            parler("Santé !");
+        } catch (OutOfStockException e) {
+            parler("Oh, zut. " + e.getMessage());
         }
     }
     

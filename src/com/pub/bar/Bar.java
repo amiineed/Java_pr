@@ -19,6 +19,7 @@ public class Bar {
     private List<Human> personnel;
     private List<Client> clients;
     private List<Boisson> consommationsProposees;
+    private List<Table> tables;
     
     /**
      * Construit un nouveau bar avec un nom et une patronne.
@@ -32,6 +33,12 @@ public class Bar {
         this.personnel = new ArrayList<>();
         this.clients = new ArrayList<>();
         this.consommationsProposees = new ArrayList<>();
+        this.tables = new ArrayList<>();
+        
+        // Initialiser 5 tables
+        for (int i = 0; i < 5; i++) {
+            tables.add(new Table());
+        }
     }
     
     public String getNom() {
@@ -75,13 +82,28 @@ public class Bar {
     
     /**
      * Ajoute un client à la liste des clients du bar.
+     * Cherche une table disponible pour asseoir le client.
      * 
      * @param client Le client à ajouter
      */
     public void ajouterClient(Client client) {
-        if (client != null && !clients.contains(client)) {
-            clients.add(client);
+        if (client == null || clients.contains(client)) {
+            return;
         }
+        
+        // Chercher une table avec de la place
+        for (Table table : tables) {
+            if (!table.estPleine()) {
+                if (table.ajouterClient(client)) {
+                    clients.add(client);
+                    System.out.println("» " + client.getPrenom() + " a été installé(e) à une table.");
+                    return;
+                }
+            }
+        }
+        
+        // Si aucune table n'est disponible
+        System.out.println("[!] Le bar est plein, impossible d'ajouter " + client.getPrenom());
     }
     
     /**

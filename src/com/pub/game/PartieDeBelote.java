@@ -492,15 +492,82 @@ public class PartieDeBelote {
             }
         }
         
-        // Jouer une carte valide au hasard
-        if (!cartesValides.isEmpty()) {
-            Carte carteJouee = cartesValides.get((int) (Math.random() * cartesValides.size()));
-            main.remove(carteJouee);
-            return carteJouee;
+        if (cartesValides.isEmpty()) {
+            // Si aucune carte valide (ne devrait pas arriver), jouer la première
+            return main.remove(0);
         }
         
-        // Si aucune carte valide (ne devrait pas arriver), jouer la première
-        return main.remove(0);
+        // Récupérer le niveau du joueur
+        NiveauBelote niveau = joueurs[joueurIndex].getNiveauBelote();
+        
+        if (niveau == null) {
+            niveau = NiveauBelote.DEBUTANT;
+        }
+        
+        Carte carteJouee;
+        
+        if (niveau == NiveauBelote.DEBUTANT) {
+            // DÉBUTANT: Jouer une carte valide au hasard
+            carteJouee = cartesValides.get((int) (Math.random() * cartesValides.size()));
+        } else {
+            // MOYEN: Trouver la carte la plus forte
+            carteJouee = trouverCarteLaPlusForte(cartesValides, couleurDemandee);
+        }
+        
+        main.remove(carteJouee);
+        return carteJouee;
+    }
+    
+    /**
+     * Trouve la carte la plus forte parmi une liste de cartes valides.
+     * Utilisé pour le niveau MOYEN.
+     * 
+     * @param cartesValides Liste des cartes valides à jouer
+     * @param couleurDemandee La couleur demandée (null si premier du pli)
+     * @return La carte la plus forte
+     */
+    private Carte trouverCarteLaPlusForte(List<Carte> cartesValides, Couleur couleurDemandee) {
+        if (cartesValides.isEmpty()) {
+            return null;
+        }
+        
+        Carte meilleurecarte = cartesValides.get(0);
+        
+        for (int i = 1; i < cartesValides.size(); i++) {
+            Carte carte = cartesValides.get(i);
+            
+            // Comparer avec la meilleure carte actuelle
+            // Priorité 1: Les atouts sont toujours plus forts
+            if (carte.getCouleur() == atout && meilleurecarte.getCouleur() != atout) {
+                meilleurecarte = carte;
+            } else if (carte.getCouleur() == atout && meilleurecarte.getCouleur() == atout) {
+                // Les deux sont des atouts, comparer la force
+                if (carte.getValeur().getOrdreForceAtout(carte.getValeur()) > 
+                    meilleurecarte.getValeur().getOrdreForceAtout(meilleurecarte.getValeur())) {
+                    meilleurecarte = carte;
+                }
+            } else if (carte.getCouleur() != atout && meilleurecarte.getCouleur() != atout) {
+                // Aucune n'est atout
+                // Si la couleur demandée existe, préférer celle de la couleur demandée
+                if (couleurDemandee != null) {
+                    if (carte.getCouleur() == couleurDemandee && meilleurecarte.getCouleur() != couleurDemandee) {
+                        meilleurecarte = carte;
+                    } else if (carte.getCouleur() == couleurDemandee && meilleurecarte.getCouleur() == couleurDemandee) {
+                        // Les deux sont de la couleur demandée, comparer la force
+                        if (carte.getValeur().getOrdreForceNormal() > meilleurecarte.getValeur().getOrdreForceNormal()) {
+                            meilleurecarte = carte;
+                        }
+                    }
+                } else {
+                    // Pas de couleur demandée, prendre la plus forte en valeur normale
+                    if (carte.getPoints(atout) > meilleurecarte.getPoints(atout)) {
+                        meilleurecarte = carte;
+                    }
+                }
+            }
+        }
+        
+        return meilleurecarte;
     }
     
     /**

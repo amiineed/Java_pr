@@ -37,7 +37,7 @@ public class Main {
         int choix;
         do {
             afficherMenuPrincipal();
-            choix = lireChoixUtilisateur(0, 8);
+            choix = lireChoixUtilisateur(0, 9);
 
             switch (choix) {
                 case 1:
@@ -63,6 +63,9 @@ public class Main {
                     break;
                 case 8:
                     actionsSpeciales();
+                    break;
+                case 9:
+                    creerPersonnageAutomatique();
                     break;
                 case 0:
                     System.out.println("Goodbye!");
@@ -144,8 +147,8 @@ public class Main {
             leBar.ajouterConsommation(wine);
         }
 
-        Client client1 = new Client("Peter", "The Shy", 40.0, 6, "Oh!", water, beer, "Blue", "homme");
-        Client client2 = new Client("Julie", "The Talkative", 30.0, 8, "Ah!", beer, water, "Necklace", "femme");
+        Client client1 = new Client("Peter", "The Shy", 40.0, 6, "Oh!", water, beer, beer, "Blue", "homme");
+        Client client2 = new Client("Julie", "The Talkative", 30.0, 8, "Ah!", beer, water, water, "Necklace", "femme");
         if (leBar != null) {
             leBar.ajouterClient(client1);
             leBar.ajouterClient(client2);
@@ -173,6 +176,7 @@ public class Main {
         System.out.println("6. Save");
         System.out.println("7. Load");
         System.out.println("8. Special actions");
+        System.out.println("9. Create auto client");
         System.out.println("0. Quit");
         System.out.print("Your choice: ");
     }
@@ -241,6 +245,15 @@ public class Main {
                 String fav = lireStringUtilisateur("Favorite drink: ");
                 Boisson boissonFav = (leBar != null) ? leBar.trouverBoisson(fav) : null;
                 
+                System.out.println("Backup favorite drink? (Water, Beer, Rum, etc.)");
+                String favSecours = lireStringUtilisateur("Backup drink: ");
+                Boisson boissonFavSecours = (leBar != null) ? leBar.trouverBoisson(favSecours) : null;
+                
+                String criSignificatif = lireStringUtilisateur("Cri significatif (ex: 'Ah!', 'Oh!', etc.): ");
+                if (criSignificatif.trim().isEmpty()) {
+                    criSignificatif = "Hey!";
+                }
+                
                 // Gender selection with validation
                 String sexe;
                 do {
@@ -258,7 +271,7 @@ public class Main {
                     identifiantGenre = lireStringUtilisateur("Bijoux: ");
                 }
                 
-                nouveau = new Client(prenom, surnom, argent, 5, "Hey!", boissonFav, (leBar != null) ? leBar.trouverBoisson("Water") : null, identifiantGenre, sexe);
+                nouveau = new Client(prenom, surnom, argent, 5, criSignificatif, boissonFav, boissonFavSecours, (leBar != null) ? leBar.trouverBoisson("Water") : null, identifiantGenre, sexe);
                 if (leBar != null) leBar.ajouterClient((Client) nouveau);
                 break;
             case "serveur":
@@ -357,7 +370,33 @@ public class Main {
             barman.recevoirPaiement(client, boissonChoisie.getPrixVente());
             client.boire(boissonChoisie);
             System.out.println(client.getPrenom() + " received and paid for " + boissonChoisie.getNom());
-        } catch (OutOfStockException | NotEnoughMoneyException e) {
+        } catch (OutOfStockException e) {
+            System.err.println("Order failed: " + e.getMessage());
+            if (barman != null) barman.parler("Sorry " + client.getPrenom() + "...");
+            
+            // Vérifier si c'était la boisson favorite et essayer la boisson de secours
+            if (boissonChoisie.equals(client.getBoissonFavorite())) {
+                System.out.println("\n[!] Votre boisson favorite n'est plus disponible!");
+                Boisson boissonSecours = client.getBoissonFavoriteSecours();
+                
+                if (boissonSecours != null) {
+                    System.out.println("Essayons votre boisson de secours: " + boissonSecours.getNom());
+                    client.parler("Bon, je vais essayer " + boissonSecours.getNom() + " alors...");
+                    
+                    try {
+                        barman.servirBoisson(boissonSecours);
+                        barman.recevoirPaiement(client, boissonSecours.getPrixVente());
+                        client.boire(boissonSecours);
+                        System.out.println("» " + client.getPrenom() + " received and paid for " + boissonSecours.getNom() + " (backup drink)");
+                    } catch (OutOfStockException | NotEnoughMoneyException e2) {
+                        System.err.println("Backup order also failed: " + e2.getMessage());
+                        if (barman != null) barman.parler("Désolé, vraiment...");
+                    }
+                } else {
+                    System.out.println("Pas de boisson de secours définie.");
+                }
+            }
+        } catch (NotEnoughMoneyException e) {
             System.err.println("Order failed: " + e.getMessage());
             if (barman != null) barman.parler("Sorry " + client.getPrenom() + "...");
         } catch (Exception e) {
@@ -801,6 +840,7 @@ public class Main {
                                     5,  // popularite
                                     "Hello!",  // criSignificatif
                                     null,  // boissonFavorite
+                                    null,  // boissonFavoriteSecours
                                     null,  // boissonActuelle
                                     "",    // identifiantGenre
                                     ""     // genre
@@ -1010,6 +1050,81 @@ public class Main {
             System.out.println("Matchs gagnés: " + joueur.getMatchsTournoiGagnes());
             System.out.println("Matchs perdus: " + joueur.getMatchsTournoiPerdus());
             System.out.println("Points tournoi: " + joueur.getPointsTournoi());
+        }
+    }
+    
+    private static void creerPersonnageAutomatique() {
+        if (leBar == null) {
+            System.out.println("[!] Bar non initialisé.");
+            return;
+        }
+        
+        System.out.println("\n=== CRÉATION AUTOMATIQUE D'UN CLIENT ===");
+        
+        Random random = new Random();
+        
+        // Générer des valeurs aléatoires
+        String prenom = "AutoClient" + random.nextInt(100);
+        String surnom = "Auto" + random.nextInt(100);
+        double porteMonnaie = 30.0 + (random.nextDouble() * 70.0); // 30-100 euros
+        int popularite = 3 + random.nextInt(8); // 3-10
+        
+        // Cris aléatoires
+        String[] cris = {"Ah!", "Oh!", "Wow!", "Cool!", "Super!", "Génial!"};
+        String criSignificatif = cris[random.nextInt(cris.length)];
+        
+        // Boissons aléatoires
+        List<Boisson> boissonsDisponibles = leBar.getConsommationsProposees();
+        Boisson boissonFavorite = null;
+        Boisson boissonSecours = null;
+        Boisson boissonActuelle = null;
+        
+        if (boissonsDisponibles != null && !boissonsDisponibles.isEmpty()) {
+            boissonFavorite = boissonsDisponibles.get(random.nextInt(boissonsDisponibles.size()));
+            boissonSecours = boissonsDisponibles.get(random.nextInt(boissonsDisponibles.size()));
+            boissonActuelle = boissonsDisponibles.get(random.nextInt(boissonsDisponibles.size()));
+        }
+        
+        // Genre aléatoire
+        String[] genres = {"homme", "femme"};
+        String genre = genres[random.nextInt(genres.length)];
+        
+        // Identifiant genre
+        String identifiantGenre;
+        if ("homme".equals(genre)) {
+            String[] couleurs = {"Red", "Blue", "Green", "Black", "White", "Yellow"};
+            identifiantGenre = couleurs[random.nextInt(couleurs.length)];
+        } else {
+            String[] bijoux = {"Necklace", "Bracelet", "Ring", "Earrings"};
+            identifiantGenre = bijoux[random.nextInt(bijoux.length)];
+        }
+        
+        // Créer le client
+        Client nouveauClient = new Client(
+            prenom, surnom, porteMonnaie, popularite,
+            criSignificatif, boissonFavorite, boissonSecours, boissonActuelle,
+            identifiantGenre, genre
+        );
+        
+        // Ajouter au bar
+        leBar.ajouterClient(nouveauClient);
+        
+        System.out.println("» Client automatique créé avec succès!");
+        System.out.println("Prénom: " + prenom);
+        System.out.println("Surnom: " + surnom);
+        System.out.println("Argent: " + String.format("%.2f", porteMonnaie) + " euros");
+        System.out.println("Genre: " + genre);
+        System.out.println("Cri: " + criSignificatif);
+        if (boissonFavorite != null) {
+            System.out.println("Boisson favorite: " + boissonFavorite.getNom());
+        }
+        
+        nouveauClient.sePresenter();
+        
+        try {
+            System.out.println("Total humans created: " + Human.getHumanCount());
+        } catch (Throwable t) {
+            // Ignore errors
         }
     }
     

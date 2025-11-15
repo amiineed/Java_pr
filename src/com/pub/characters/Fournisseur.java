@@ -20,7 +20,7 @@ public class Fournisseur extends Human {
      * @param entreprise Le nom de l'entreprise du fournisseur
      */
     public Fournisseur(String prenom, String surnom, double porteMonnaie, int popularite, String entreprise) {
-        super(prenom, surnom, porteMonnaie, popularite);
+        super(prenom, surnom, porteMonnaie, popularite, "Livraison !");
         this.entreprise = entreprise;
     }
     
