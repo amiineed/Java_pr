@@ -12,7 +12,6 @@ public class Client extends Human implements JoueurBelote {
     private String identifiantGenre;
     private String genre;
     
-    // Statistiques de consommation
     private int nombreVerresConsommes;
     
     public Client(String prenom, String surnom, double porteMonnaie, int popularite, 
@@ -24,14 +23,10 @@ public class Client extends Human implements JoueurBelote {
         this.niveauAlcoolemie = 0.0;
         this.identifiantGenre = identifiantGenre;
         this.genre = genre;
-        // Initialisation des statistiques de consommation
         this.nombreVerresConsommes = 0;
     }
     
-    /**
-     * Constructeur de copie pour un Client.
-     * @param other Le client à copier.
-     */
+  
     public Client(Client other) {
         super(other.getPrenom(), other.getSurnom(), other.getPorteMonnaie(), other.getPopularite(), other.getCriSignificatif());
         this.boissonFavorite = other.boissonFavorite;
@@ -42,7 +37,7 @@ public class Client extends Human implements JoueurBelote {
         this.genre = other.genre;
         this.nombreVerresConsommes = other.nombreVerresConsommes;
         this.setNiveauBelote(other.getNiveauBelote());
-        // Note: Tournament stats are intentionally not copied.
+       
     }
     
     public Boisson getBoissonFavorite() {
@@ -114,7 +109,6 @@ public class Client extends Human implements JoueurBelote {
         parler(cri + "Ça fait du bien!");
     }
     
-    // Getters et setters pour les statistiques
     public int getNombreVerresConsommes() {
         return nombreVerresConsommes;
     }
@@ -135,36 +129,24 @@ public class Client extends Human implements JoueurBelote {
         return pointsTournoi;
     }
     
-    /**
-     * Enregistre le résultat d'un match de tournoi pour ce joueur.
-     * Met à jour les statistiques individuelles (matchs joués, victoires, défaites, points).
-     * 
-     * @param victoire true si le joueur a gagné le match, false sinon
-     */
+
     public void enregistrerMatchTournoi(boolean victoire) {
         this.matchsTournoiJoues++;
         if (victoire) {
             this.matchsTournoiGagnes++;
-            this.pointsTournoi += 3; // 3 points pour une victoire
+            this.pointsTournoi += 3; 
         } else {
             this.matchsTournoiPerdus++;
         }
     }
     
-    /**
-     * Fournit une chaîne formatée affichant les statistiques détaillées du Client,
-     * incluant le nombre de verres consommés total et les statistiques de tournoi
-     * (matchs joués, victoires/défaites, points de tournoi).
-     * 
-     * @return String représentant les statistiques formatées en console
-     */
+   
     public String getStatistiquesDetailles() {
         StringBuilder stats = new StringBuilder();
         stats.append("\n╔═══════════════════════════════════════════════════════════╗\n");
         stats.append(String.format("║        STATISTIQUES DE %-32s║\n", getPrenom().toUpperCase()));
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
-        // Informations générales
         stats.append(String.format("║ Surnom : %-48s║\n", getSurnom()));
         stats.append(String.format("║ Argent disponible : %-36s║\n", 
                                    String.format("%.2f euros", getPorteMonnaie())));
@@ -190,7 +172,6 @@ public class Client extends Human implements JoueurBelote {
         stats.append(String.format("║ Défaites : %-47s║\n", matchsTournoiPerdus));
         stats.append(String.format("║ Points de tournoi : %-38s║\n", pointsTournoi));
         
-        // Calcul du taux de victoire
         if (matchsTournoiJoues > 0) {
             double tauxVictoire = (double) matchsTournoiGagnes / matchsTournoiJoues * 100;
             stats.append(String.format("║ Taux de victoire : %-39s║\n", 
@@ -219,7 +200,6 @@ public class Client extends Human implements JoueurBelote {
     public void sePresenter() {
         parler("Hi! I am " + getPrenom() + " called '" + getSurnom() + "'.");
         
-        // Corrected gender-specific presentation
         if (identifiantGenre != null && !identifiantGenre.isEmpty()) {
             if ("homme".equalsIgnoreCase(genre)) {
                 parler("Do you like my " + identifiantGenre + " tee-shirt?");
@@ -232,7 +212,6 @@ public class Client extends Human implements JoueurBelote {
             parler("My favorite drink is " + boissonFavorite.getNom() + ".");
         }
         
-        // Corrected currency display
         parler("I have " + String.format("%.2f", getPorteMonnaie()) + " euros in my wallet.");
     }
 }
