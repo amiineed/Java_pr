@@ -1,16 +1,13 @@
 package com.pub.game;
 
-// Concept: Enum (Java1.3)
-// Adding points/order logic directly in the enum
+
 public enum ValeurCarte {
-    // Normal order: 7, 8, 9, 10, Valet, Dame, Roi, As
-    // Atout order: 7, 8, Dame, Roi, 10, As, 9, Valet
-    // Annonce order: 7, 8, 9, 10, Valet, Dame, Roi, As
+   
     SEPT("7", 0, 0, 0, 0),
     HUIT("8", 0, 0, 1, 1),
-    NEUF("9", 0, 14, 2, 5), // Special points atout
+    NEUF("9", 0, 14, 2, 5), 
     DIX("10", 10, 10, 3, 3),
-    VALET("Valet", 2, 20, 4, 6), // Special points atout
+    VALET("Valet", 2, 20, 4, 6), 
     DAME("Dame", 3, 3, 5, 2),
     ROI("Roi", 4, 4, 6, 4),
     AS("As", 11, 11, 7, 7);
@@ -19,7 +16,7 @@ public enum ValeurCarte {
     private final int pointsNormal;
     private final int pointsAtout;
     private final int ordreAnnonce;
-    private final int ordreForceNormal; // Lower is weaker for simple comparison
+    private final int ordreForceNormal; 
 
     ValeurCarte(String representation, int pointsNormal, int pointsAtout, int ordreAnnonce, int ordreForceNormal) {
         this.representation = representation;
@@ -38,7 +35,6 @@ public enum ValeurCarte {
     }
 
      public int getOrdreForceAtout(ValeurCarte v) {
-         // Specific order for trump
          switch(v) {
             case VALET: return 8;
             case NEUF: return 7;
@@ -56,7 +52,6 @@ public enum ValeurCarte {
         return ordreAnnonce;
     }
 
-    // Concept: toString override (Java1.2)
     @Override
     public String toString() {
         return representation;

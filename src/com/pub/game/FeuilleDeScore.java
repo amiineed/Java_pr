@@ -32,7 +32,6 @@ public class FeuilleDeScore {
             return;
         }
         
-        // Trier par points décroissants
         equipes.sort((e1, e2) -> Integer.compare(e2.getPoints(), e1.getPoints()));
         
         System.out.printf("%-3s %-20s %-8s %-8s %-8s %-8s%n", 
@@ -43,8 +42,6 @@ public class FeuilleDeScore {
         for (int i = 0; i < equipes.size(); i++) {
             Equipe equipe = equipes.get(i);
             
-            // Si ce n'est pas la première équipe et que les points sont différents de l'équipe précédente
-            // alors on met à jour le rang (dense ranking: 1, 1, 2, 3, 3, 4)
             if (i > 0 && equipe.getPoints() < equipes.get(i - 1).getPoints()) {
                 rangActuel++;
             }

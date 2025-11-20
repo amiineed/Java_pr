@@ -6,12 +6,7 @@ import com.pub.exceptions.BarException;
 import com.pub.exceptions.NotEnoughMoneyException;
 import com.pub.exceptions.OutOfStockException;
 
-/**
- * Représente le patron/la patronne du bar.
- * 
- * <p>Le patron gère les finances du bar, peut retirer de l'argent de la caisse,
- * payer les fournisseurs et exclure des clients indésirables.</p>
- */
+
 public class Patron extends Human {
     
     public Patron(String prenom, String surnom, double porteMonnaie) throws BarException {
@@ -21,13 +16,7 @@ public class Patron extends Human {
         }
     }
     
-    /**
-     * Paie un fournisseur pour une livraison.
-     * Transfère l'argent du portefeuille du patron vers celui du fournisseur.
-     * 
-     * @param fournisseur Le fournisseur à payer
-     * @param montant Le montant à payer
-     */
+
     public void payerFournisseur(Fournisseur fournisseur, double montant) {
         if (fournisseur == null || montant <= 0) {
             parler("Paiement invalide!");
@@ -42,15 +31,7 @@ public class Patron extends Human {
             parler("Je n'ai pas assez d'argent pour payer " + fournisseur.getPrenom() + "!");
         }
     }
-    
-    /**
-     * Récupère de l'argent de la caisse du bar.
-     * Transfère l'argent de la caisse vers le portefeuille du patron.
-     * 
-     * @param caisse La caisse du bar
-     * @param montant Le montant à récupérer
-     * @return true si le retrait a réussi, false sinon
-     */
+ 
     public boolean recupererArgentCaisse(Caisse caisse, double montant) {
         if (caisse == null || montant <= 0) {
             parler("Opération invalide!");
@@ -77,7 +58,6 @@ public class Patron extends Human {
         this.parler("Je t'offre un " + boisson.getNom() + ", " + receveur.getPrenom() + " !");
         try {
             barman.servirBoisson(boisson);
-            // La patronne ne paie pas - ligne supprimée : barman.recevoirPaiement(this, boisson.getPrixVente());
             receveur.boire(boisson);
             parler("Santé !");
         } catch (OutOfStockException e) {

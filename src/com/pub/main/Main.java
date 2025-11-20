@@ -75,16 +75,9 @@ public class Main {
                     break;
             }
         } while (choix != 0);
-
-        // NOTE: Ne JAMAIS fermer le Scanner lié à System.in, car cela ferme le flux définitivement
-        // scanner.close(); // ❌ SUPPRIMÉ - cause NoSuchElementException
         System.out.println("\nMerci d'avoir utilisé l'application. À bientôt !");
     }
 
-    /**
-     * Initialise le bar avec la patronne, le personnel, les clients et les boissons.
-     * Crée également un fournisseur par défaut.
-     */
     private static void initialiserBar() {
         Patron patronne = null;
         try {
@@ -158,20 +151,16 @@ public class Main {
             leBar.ajouterClient(client2);
         }
 
-        // Créer un fournisseur par défaut
         fournisseur = new Fournisseur("Jacques", "Le Grossiste", 500.0, 30, "Boissons & Co");
 
         System.out.println("Bar initialized: " + (leBar != null ? leBar.getNom() : "N/A"));
         try {
             System.out.println("Total humans created: " + Human.getHumanCount());
         } catch (Throwable t) {
-            // Ignore errors if Human.getHumanCount() is not available
         }
     }
 
-    /**
-     * Affiche le menu principal de l'application.
-     */
+   
     private static void afficherMenuPrincipal() {
         System.out.println();
         System.out.println("--- Main Menu ---");
@@ -188,13 +177,7 @@ public class Main {
         System.out.print("Your choice: ");
     }
 
-    /**
-     * Lit un choix utilisateur dans une plage donnée.
-     * 
-     * @param min La valeur minimale acceptée
-     * @param max La valeur maximale acceptée
-     * @return Le choix de l'utilisateur
-     */
+ 
     private static int lireChoixUtilisateur(int min, int max) {
         int choix = -1;
         boolean validInput;
@@ -216,23 +199,13 @@ public class Main {
         return choix;
     }
 
-    /**
-     * Lit une chaîne de caractères saisie par l'utilisateur.
-     * 
-     * @param prompt Le message à afficher avant la saisie
-     * @return La chaîne saisie par l'utilisateur
-     */
+
     private static String lireStringUtilisateur(String prompt) {
         System.out.print(prompt);
         return scanner.nextLine();
     }
 
-    /**
-     * Lit un nombre décimal saisi par l'utilisateur.
-     * 
-     * @param prompt Le message à afficher avant la saisie
-     * @return La valeur décimale saisie
-     */
+
     private static double lireDoubleUtilisateur(String prompt) {
         double valeur = -1;
         boolean validInput;
@@ -255,9 +228,6 @@ public class Main {
         return valeur;
     }
 
-    /**
-     * Crée un nouveau personnage (Client, Serveur ou Serveuse) de manière interactive.
-     */
     private static void creerPersonnage() {
         System.out.println();
         System.out.println("--- Create Persona ---");
@@ -283,7 +253,6 @@ public class Main {
                     criSignificatif = "Hey!";
                 }
                 
-                // Gender selection with validation
                 String sexe;
                 do {
                     sexe = lireStringUtilisateur("Genre (Homme/Femme): ").toLowerCase();
@@ -292,7 +261,6 @@ public class Main {
                     }
                 } while (!sexe.equals("homme") && !sexe.equals("femme"));
                 
-                // Ask for appropriate accessory based on gender
                 String identifiantGenre;
                 if (sexe.equals("homme")) {
                     identifiantGenre = lireStringUtilisateur("Couleur du tee-shirt: ");
@@ -333,13 +301,9 @@ public class Main {
         try {
             System.out.println("Total humans created: " + Human.getHumanCount());
         } catch (Throwable t) {
-            // Ignore errors if Human.getHumanCount() is not available
         }
     }
 
-    /**
-     * Affiche la liste de tous les personnages présents dans le bar.
-     */
     private static void listerPersonnages() {
         if (leBar == null) {
             System.out.println("Bar not initialized.");
@@ -368,10 +332,6 @@ public class Main {
         }
     }
 
-    /**
-     * Gère la commande d'une boisson par un client.
-     * Inclut la gestion de la boisson de secours si la favorite n'est pas disponible.
-     */
     private static void commanderBoisson() {
         System.out.println();
         System.out.println("--- Order ---");
@@ -410,7 +370,6 @@ public class Main {
             return;
         }
         
-        // Determine who is serving
         Human serveurDuMoment = null;
         if (leBar.getPersonnel() != null && !leBar.getPersonnel().isEmpty()) {
             List<Human> staffActif = new ArrayList<>();
@@ -431,13 +390,12 @@ public class Main {
             client.boire(boissonChoisie);
             System.out.println(client.getPrenom() + " received and paid for " + boissonChoisie.getNom());
             
-            // --- Staff Influence Logic ---
             if (serveurDuMoment instanceof Serveuse) {
                 Serveuse s = (Serveuse) serveurDuMoment;
-                if (s.getNiveauCharme() >= 8) { // High charm
+                if (s.getNiveauCharme() >= 8) { 
                     client.parler(s.getPrenom() + " is so charming! I'll have another one.");
                     try {
-                        barman.servirBoisson(boissonChoisie); // Order the same drink again
+                        barman.servirBoisson(boissonChoisie);
                         barman.recevoirPaiement(client, boissonChoisie.getPrixVente());
                         client.boire(boissonChoisie);
                     } catch (Exception e2) {
@@ -446,16 +404,14 @@ public class Main {
                 }
             } else if (serveurDuMoment instanceof Serveur && boissonChoisie instanceof BoissonAlcoolisee) {
                 Serveur s = (Serveur) serveurDuMoment;
-                if (s.getTailleBiceps() >= 15) { // Strong server
+                if (s.getTailleBiceps() >= 15) { 
                     client.parler("This server " + s.getPrenom() + " looks tough... I'll behave.");
                 }
             }
-            // --- End of Staff Influence Logic ---
         } catch (OutOfStockException e) {
             System.err.println("Order failed: " + e.getMessage());
             if (barman != null) barman.parler("Sorry " + client.getPrenom() + "...");
             
-            // Vérifier si c'était la boisson favorite et essayer la boisson de secours
             if (boissonChoisie.equals(client.getBoissonFavorite())) {
                 System.out.println("\n[!] Votre boisson favorite n'est plus disponible!");
                 Boisson boissonSecours = client.getBoissonFavoriteSecours();
@@ -485,9 +441,7 @@ public class Main {
         }
     }
 
-    /**
-     * Affiche le menu de gestion du tournoi de Belote.
-     */
+   
     private static void gererTournoi() {
         if (leBar == null) {
             System.out.println("Bar not initialized.");
@@ -550,9 +504,6 @@ public class Main {
         }
     }
 
-    /**
-     * Crée un nouveau tournoi avec les frais d'inscription spécifiés.
-     */
     private static void creerTournoi() {
         if (tournoiEnCours != null && !tournoiEnCours.isTournoiTermine()) {
             System.out.println("Un tournoi est déjà en cours !");
@@ -569,24 +520,18 @@ public class Main {
         System.out.println("» Tournoi créé avec succès !");
     }
 
-    /**
-     * Inscrit manuellement une équipe au tournoi en cours.
-     */
     private static void inscrireEquipeTournoi() {
         if (tournoiEnCours == null) {
             System.out.println("Aucun tournoi en cours. Créez d'abord un tournoi.");
             return;
         }
 
-        // Créer une liste de tous les joueurs disponibles (Clients + Serveurs/Serveuses)
         List<Human> joueursDisponibles = new ArrayList<>();
         
-        // Ajouter les clients
         if (leBar.getClients() != null) {
             joueursDisponibles.addAll(leBar.getClients());
         }
         
-        // Ajouter le personnel qui peut jouer (Serveur/Serveuse, mais pas Barman/Patronne)
         if (leBar.getPersonnel() != null) {
             for (Human personnel : leBar.getPersonnel()) {
                 if (personnel instanceof com.pub.game.JoueurBelote) {
@@ -625,13 +570,10 @@ public class Main {
         Human joueur1 = joueursDisponibles.get(idx1);
         Human joueur2 = joueursDisponibles.get(idx2);
 
-        // Laisser Tournoi.inscrireEquipe() gérer toutes les validations dans le bon ordre
         tournoiEnCours.inscrireEquipe(nomEquipe, joueur1, joueur2);
     }
 
-    /**
-     * Démarre le tournoi en cours après validation.
-     */
+
     private static void demarrerTournoi() {
         if (tournoiEnCours == null) {
             System.out.println("Aucun tournoi en cours.");
@@ -641,33 +583,24 @@ public class Main {
         tournoiEnCours.demarrerTournoi();
     }
 
-    /**
-     * Joue le prochain match du tournoi.
-     * Demande si l'utilisateur veut participer manuellement.
-     */
     private static void jouerProchainMatch() {
         if (tournoiEnCours == null) {
             System.out.println("Aucun tournoi en cours.");
             return;
         }
         
-        // Demander si l'utilisateur veut jouer manuellement
         System.out.println("\nVoulez-vous participer à ce match manuellement ?");
         System.out.print("Entrez votre prénom (ou appuyez sur Entrée pour simulation IA): ");
         String nomJoueur = scanner.nextLine().trim();
         
         if (nomJoueur.isEmpty()) {
-            nomJoueur = null; // Mode simulation
+            nomJoueur = null; 
         }
         
         if (!tournoiEnCours.jouerProchainMatch(nomJoueur)) {
-            // Message déjà affiché par la méthode
         }
     }
 
-    /**
-     * Joue automatiquement tous les matchs restants du tournoi.
-     */
     private static void jouerTournoiComplet() {
         if (tournoiEnCours == null) {
             System.out.println("Aucun tournoi en cours.");
@@ -678,13 +611,10 @@ public class Main {
         try {
             tournoiEnCours.jouerTournoiComplet();
         } catch (TournoiException e) {
-            System.out.println("❌ Erreur: " + e.getMessage());
+            System.out.println("Erreur: " + e.getMessage());
         }
     }
 
-    /**
-     * Affiche le classement actuel du tournoi.
-     */
     private static void afficherClassement() {
         if (tournoiEnCours == null) {
             System.out.println("Aucun tournoi en cours.");
@@ -694,9 +624,6 @@ public class Main {
         tournoiEnCours.getFeuilleDeScore().afficherClassement();
     }
 
-    /**
-     * Affiche toutes les équipes inscrites au tournoi.
-     */
     private static void afficherEquipesInscrites() {
         if (tournoiEnCours == null) {
             System.out.println("Aucun tournoi en cours.");
@@ -705,11 +632,7 @@ public class Main {
 
         tournoiEnCours.afficherEquipesInscrites();
     }
-    
-    /**
-     * Inscrit automatiquement des équipes au tournoi en cours.
-     * Crée des équipes aléatoires avec les joueurs disponibles.
-     */
+
     private static void inscrireEquipesAutomatiquement() {
         if (tournoiEnCours == null) {
             System.out.println("[!] Aucun tournoi en cours. Créez d'abord un tournoi.");
@@ -723,17 +646,14 @@ public class Main {
         
         System.out.println("\n=== INSCRIPTION AUTOMATIQUE DES ÉQUIPES ===");
         
-        // Créer une liste de tous les joueurs disponibles
         List<Human> joueursDisponibles = new ArrayList<>();
         
-        // Ajouter les clients
         if (leBar.getClients() != null) {
             for (Client client : leBar.getClients()) {
                 joueursDisponibles.add(client);
             }
         }
         
-        // Ajouter le personnel qui peut jouer (Serveur/Serveuse)
         if (leBar.getPersonnel() != null) {
             for (Human personnel : leBar.getPersonnel()) {
                 if (personnel instanceof com.pub.game.JoueurBelote) {
@@ -742,7 +662,6 @@ public class Main {
             }
         }
         
-        // Retirer les joueurs déjà inscrits
         List<Equipe> equipesInscrites = tournoiEnCours.getEquipesInscrites();
         List<Human> joueursDejaInscrits = new ArrayList<>();
         for (Equipe equipe : equipesInscrites) {
@@ -757,13 +676,11 @@ public class Main {
             return;
         }
         
-        // Mélanger la liste
         Collections.shuffle(joueursDisponibles);
         
         Random random = new Random();
         int equipesCreees = 0;
         
-        // Créer des équipes tant qu'il y a au moins 2 joueurs
         while (joueursDisponibles.size() >= 2) {
             Human joueur1 = joueursDisponibles.remove(0);
             Human joueur2 = joueursDisponibles.remove(0);
@@ -784,10 +701,7 @@ public class Main {
         }
     }
     
-    /**
-     * Affiche la synthèse complète du tournoi terminé.
-     * Inclut le nombre de joueurs et les statistiques de consommation.
-     */
+    
     private static void afficherSyntheseTournoi() {
         if (tournoiEnCours == null) {
             System.out.println("[!] Aucun tournoi en cours.");
@@ -806,12 +720,10 @@ public class Main {
         
         List<Equipe> equipes = tournoiEnCours.getEquipesInscrites();
         
-        // Compter le nombre total de joueurs
         int nombreJoueurs = equipes.size() * 2;
         System.out.println("\nNombre d'équipes : " + equipes.size());
         System.out.println("Nombre de joueurs : " + nombreJoueurs);
         
-        // Calculer le total des verres consommés
         int totalVerres = 0;
         List<String> clientsJoueurs = new ArrayList<>();
         
@@ -849,10 +761,7 @@ public class Main {
         
         System.out.println("=".repeat(60));
     }
-    
-    /**
-     * Affiche le détail des scores de tous les matchs joués.
-     */
+   
     private static void afficherDetailsMatchs() {
         if (tournoiEnCours == null || tournoiEnCours.getCalendrierDesMatchs().isEmpty()) {
             System.out.println("[!] No tournament started or no matches scheduled.");
@@ -886,13 +795,8 @@ public class Main {
         }
     }
 
-    /**
-     * Sauvegarde l'état complet du bar et du tournoi dans un fichier.
-     * 
-     * @param nomFichierDefaut Le nom de fichier par défaut (non utilisé)
-     */
+    
     private static void sauvegarderEtatSimplifie(String nomFichierDefaut) {
-        // Toujours demander un nom de sauvegarde
         System.out.println("\n=== SAUVEGARDER VOTRE PARTIE ===");
         System.out.print("Entrez un nom pour votre sauvegarde (ex: partie_amine) : ");
         String nomBase = scanner.nextLine().trim();
@@ -902,16 +806,12 @@ public class Main {
             System.out.println("Nom vide. Utilisation du nom par défaut: " + nomBase);
         }
         
-        // Toujours utiliser l'extension .barsave
         String nomFichier = nomBase.endsWith(".barsave") ? nomBase : nomBase + ".barsave";
         
-        // S'assurer que le dossier saves/ existe
         Helper.ensureDirectoryExists("saves");
         
-        // Construire le chemin complet dans le dossier saves/
         String cheminComplet = "saves/" + nomFichier;
         
-        // Vérifier si le fichier existe déjà
         File fichier = new File(cheminComplet);
         if (fichier.exists()) {
             System.out.print("[!] Le fichier '" + nomFichier + "' existe déjà. Écraser? (oui/non) : ");
@@ -926,7 +826,6 @@ public class Main {
         try {
             writer = new PrintWriter(new FileWriter(cheminComplet));
             
-            // === SECTION BAR ===
             writer.println("=== BAR ===");
             writer.println("State of bar: " + (leBar != null ? leBar.getNom() : "UNINITIALIZED"));
             try {
@@ -961,7 +860,6 @@ public class Main {
                 }
             }
             
-            // === SECTION TOURNOI ===
             writer.println("=== TOURNOI ===");
             if (tournoiEnCours == null) {
                 writer.println("TournoiActif: false");
@@ -972,7 +870,6 @@ public class Main {
                 writer.println("TournoiDemarre: " + tournoiEnCours.isTournoiDemarre());
                 writer.println("TournoiTermine: " + tournoiEnCours.isTournoiTermine());
                 
-                // Sauvegarder les équipes inscrites avec leurs scores
                 writer.println("--- Equipes ---");
                 List<Equipe> equipes = tournoiEnCours.getEquipesInscrites();
                 for (Equipe equipe : equipes) {
@@ -984,8 +881,7 @@ public class Main {
                                  equipe.getMatchsGagnes());
                 }
                 
-                // Note: Les matchs du calendrier ne sont pas sauvegardés car ils seront
-                // recréés automatiquement lors du chargement si le tournoi est démarré
+
             }
             
             System.out.println("» État sauvegardé dans '" + cheminComplet + "'");
@@ -996,21 +892,15 @@ public class Main {
         }
     }
 
-    /**
-     * Charge l'état du bar et du tournoi depuis un fichier de sauvegarde.
-     * 
-     * @param nomFichierDefaut Le nom de fichier par défaut (non utilisé)
-     */
+    
     private static void chargerEtatSimplifie(String nomFichierDefaut) {
         if (leBar == null) {
             System.out.println("Bar not initialized. Cannot load state.");
             return;
         }
         
-        // Rechercher tous les fichiers .barsave dans le dossier saves/
         File repertoireSaves = new File("saves");
         
-        // Vérifier si le dossier saves/ existe
         if (!repertoireSaves.exists() || !repertoireSaves.isDirectory()) {
             System.out.println("[!] Aucun fichier de sauvegarde trouvé (.barsave)");
             System.out.println("Le dossier 'saves/' n'existe pas encore.");
@@ -1026,14 +916,12 @@ public class Main {
             return;
         }
         
-        // Afficher la liste des fichiers disponibles
         System.out.println("\n=== VOS PARTIES SAUVEGARDÉES ===");
         for (int i = 0; i < fichiersSave.length; i++) {
             System.out.println((i + 1) + ". " + fichiersSave[i].getName());
         }
         System.out.println("0. Annuler");
         
-        // Demander à l'utilisateur de choisir
         System.out.print("\nQuelle partie voulez-vous charger ? ");
         int choix = lireChoixUtilisateur(0, fichiersSave.length);
         
@@ -1052,9 +940,8 @@ public class Main {
             int equipesLoaded = 0;
             boolean cashUpdated = false;
             boolean tournoiRestored = false;
-            String currentSection = "";  // Track which section we're in
+            String currentSection = "";  
             
-            // Variables pour reconstruire le tournoi
             boolean tournoiActif = false;
             double fraisInscription = 0;
             boolean inscriptionsOuvertes = false;
@@ -1065,12 +952,10 @@ public class Main {
             while (fileScanner.hasNextLine()) {
                 String line = fileScanner.nextLine().trim();
                 
-                // Skip empty lines
                 if (line.isEmpty()) {
                     continue;
                 }
                 
-                // Parse and update cash
                 if (line.startsWith("Cash: ")) {
                     String cashValue = line.substring(6).trim();
                     if (!cashValue.equals("N/A")) {
@@ -1087,7 +972,6 @@ public class Main {
                     continue;
                 }
                 
-                // Track section headers
                 if (line.startsWith("State of bar:") || line.equals("=== BAR ===")) {
                     currentSection = "bar";
                     continue;
@@ -1105,7 +989,6 @@ public class Main {
                     continue;
                 }
                 
-                // Parse tournament configuration
                 if (currentSection.equals("tournoi")) {
                     if (line.startsWith("TournoiActif: ")) {
                         tournoiActif = Boolean.parseBoolean(line.substring(14).trim());
@@ -1121,37 +1004,32 @@ public class Main {
                     continue;
                 }
                 
-                // Parse lines based on current section
                 if (line.contains(";")) {
                     String[] data = line.split(";");
                     
                     if (currentSection.equals("clients") && data.length >= 3) {
-                        // Parse client line (format: prenom;porteMonnaie;niveauAlcoolemie)
                         try {
                             String prenom = data[0].trim();
                             double porteMonnaie = Double.parseDouble(data[1].trim());
                             double niveauAlcoolemie = Double.parseDouble(data[2].trim());
                             
-                            // Find existing client or create new one
                             Client client = leBar.trouverClient(prenom);
                             
                             if (client != null) {
-                                // Update existing client
                                 client.setPorteMonnaie(porteMonnaie);
                                 client.setNiveauAlcoolemie(niveauAlcoolemie);
                             } else {
-                                // Create new client with default values
                                 Client nouveauClient = new Client(
                                     prenom,
-                                    "Loaded",  // surnom
+                                    "Loaded",  
                                     porteMonnaie,
-                                    5,  // popularite
-                                    "Hello!",  // criSignificatif
-                                    null,  // boissonFavorite
-                                    null,  // boissonFavoriteSecours
-                                    null,  // boissonActuelle
-                                    "",    // identifiantGenre
-                                    ""     // genre
+                                    5,  
+                                    "Hello!",  
+                                    null,  
+                                    null, 
+                                    null,  
+                                    "",   
+                                    ""   
                                 );
                                 nouveauClient.setNiveauAlcoolemie(niveauAlcoolemie);
                                 leBar.ajouterClient(nouveauClient);
@@ -1161,7 +1039,6 @@ public class Main {
                             System.out.println("[!] Cannot parse client data: " + line);
                         }
                     } else if (currentSection.equals("personnel") && data.length >= 5) {
-                        // Parse personnel line (format: TYPE;prenom;surnom;porteMonnaie;attributSpecifique)
                         try {
                             String type = data[0].trim();
                             String prenom = data[1].trim();
@@ -1169,7 +1046,6 @@ public class Main {
                             double porteMonnaie = Double.parseDouble(data[3].trim());
                             int attributSpecifique = Integer.parseInt(data[4].trim());
                             
-                            // Find existing personnel or create new one
                             Human personnelExistant = null;
                             if (leBar.getPersonnel() != null) {
                                 for (Human p : leBar.getPersonnel()) {
@@ -1182,11 +1058,9 @@ public class Main {
                             
                             if (type.equals("Serveur")) {
                                 if (personnelExistant instanceof com.pub.characters.Serveur) {
-                                    // Update existing Serveur
                                     personnelExistant.setPorteMonnaie(porteMonnaie);
                                     ((com.pub.characters.Serveur) personnelExistant).setTailleBiceps(attributSpecifique);
                                 } else {
-                                    // Create new Serveur
                                     com.pub.characters.Serveur serveur = new com.pub.characters.Serveur(
                                         prenom, surnom, porteMonnaie, attributSpecifique
                                     );
@@ -1195,11 +1069,9 @@ public class Main {
                                 personnelLoaded++;
                             } else if (type.equals("Serveuse")) {
                                 if (personnelExistant instanceof com.pub.characters.Serveuse) {
-                                    // Update existing Serveuse
                                     personnelExistant.setPorteMonnaie(porteMonnaie);
                                     ((com.pub.characters.Serveuse) personnelExistant).setNiveauCharme(attributSpecifique);
                                 } else {
-                                    // Create new Serveuse
                                     com.pub.characters.Serveuse serveuse = new com.pub.characters.Serveuse(
                                         prenom, surnom, porteMonnaie, attributSpecifique
                                     );
@@ -1211,20 +1083,16 @@ public class Main {
                             System.out.println("[!] Cannot parse personnel data: " + line);
                         }
                     } else if (currentSection.equals("equipes") && data.length >= 6) {
-                        // Store equipes data for later reconstruction
-                        // Format: nomEquipe;joueur1Prenom;joueur2Prenom;points;matchsJoues;matchsGagnes
                         equipesData.add(data);
                         equipesLoaded++;
                     }
                 }
             }
             
-            // Reconstruire le tournoi si nécessaire
             if (tournoiActif) {
                 try {
                     tournoiEnCours = new Tournoi(leBar, fraisInscription);
                     
-                    // Ouvrir les inscriptions et inscrire les équipes
                     if (!equipesData.isEmpty()) {
                         tournoiEnCours.ouvrirInscriptions();
                         
@@ -1236,25 +1104,20 @@ public class Main {
                             int matchsJoues = Integer.parseInt(equipeInfo[4].trim());
                             int matchsGagnes = Integer.parseInt(equipeInfo[5].trim());
                             
-                            // Trouver les joueurs dans le bar
                             Human joueur1 = Helper.trouverJoueurParPrenom(leBar, prenom1);
                             Human joueur2 = Helper.trouverJoueurParPrenom(leBar, prenom2);
                             
                             if (joueur1 != null && joueur2 != null) {
                                 tournoiEnCours.inscrireEquipe(nomEquipe, joueur1, joueur2);
                                 
-                                // Restaurer les scores de l'équipe ET des joueurs
                                 List<Equipe> equipes = tournoiEnCours.getEquipesInscrites();
                                 for (Equipe equipe : equipes) {
                                     if (equipe.getNom().equals(nomEquipe)) {
-                                        // Mettre à jour les statistiques de l'équipe et des joueurs
                                         for (int i = 0; i < matchsJoues; i++) {
                                             boolean victoire = (i < matchsGagnes);
                                             
-                                            // Mettre à jour l'équipe
                                             equipe.enregistrerMatch(victoire);
                                             
-                                            // Mettre à jour les statistiques individuelles des joueurs
                                             joueur1.enregistrerMatchTournoi(victoire);
                                             joueur2.enregistrerMatchTournoi(victoire);
                                         }
@@ -1265,7 +1128,6 @@ public class Main {
                         }
                     }
                     
-                    // Restaurer l'état du tournoi
                     if (!inscriptionsOuvertes) {
                         tournoiEnCours.fermerInscriptions();
                     }
@@ -1298,24 +1160,19 @@ public class Main {
         }
     }
     
-    /**
-     * Affiche les statistiques détaillées d'un joueur.
-     */
+
     private static void afficherStatistiquesJoueur() {
         if (leBar == null) {
             System.out.println("Bar not initialized.");
             return;
         }
         
-        // Créer une liste de tous les joueurs disponibles (Clients + Serveurs/Serveuses)
         List<Human> joueursDisponibles = new ArrayList<>();
         
-        // Ajouter les clients
         if (leBar.getClients() != null) {
             joueursDisponibles.addAll(leBar.getClients());
         }
         
-        // Ajouter le personnel qui peut jouer (Serveur/Serveuse, mais pas Barman/Patronne)
         if (leBar.getPersonnel() != null) {
             for (Human personnel : leBar.getPersonnel()) {
                 if (personnel instanceof com.pub.game.JoueurBelote) {
@@ -1346,11 +1203,9 @@ public class Main {
         
         Human joueur = joueursDisponibles.get(choix - 1);
         
-        // Afficher les statistiques (uniquement disponibles pour les Clients)
         if (joueur instanceof Client) {
             System.out.println(((Client) joueur).getStatistiquesDetailles());
         } else {
-            // Pour Serveur/Serveuse, afficher les statistiques de tournoi de base
             System.out.println("\n=== Statistiques de " + joueur.getPrenom() + " ===");
             System.out.println("Type: " + joueur.getClass().getSimpleName());
             System.out.println("Surnom: " + joueur.getSurnom());
@@ -1364,9 +1219,7 @@ public class Main {
         }
     }
     
-    /**
-     * Crée automatiquement un client avec des valeurs aléatoires.
-     */
+
     private static void creerPersonnageAutomatique() {
         if (leBar == null) {
             System.out.println("[!] Bar non initialisé.");
@@ -1377,17 +1230,14 @@ public class Main {
         
         Random random = new Random();
         
-        // Générer des valeurs aléatoires
         String prenom = "AutoClient" + random.nextInt(100);
         String surnom = "Auto" + random.nextInt(100);
-        double porteMonnaie = 30.0 + (random.nextDouble() * 70.0); // 30-100 euros
-        int popularite = 3 + random.nextInt(8); // 3-10
+        double porteMonnaie = 30.0 + (random.nextDouble() * 70.0); 
+        int popularite = 3 + random.nextInt(8); 
         
-        // Cris aléatoires
         String[] cris = {"Ah!", "Oh!", "Wow!", "Cool!", "Super!", "Génial!"};
         String criSignificatif = cris[random.nextInt(cris.length)];
         
-        // Boissons aléatoires
         List<Boisson> boissonsDisponibles = leBar.getConsommationsProposees();
         Boisson boissonFavorite = null;
         Boisson boissonSecours = null;
@@ -1399,11 +1249,9 @@ public class Main {
             boissonActuelle = boissonsDisponibles.get(random.nextInt(boissonsDisponibles.size()));
         }
         
-        // Genre aléatoire
         String[] genres = {"homme", "femme"};
         String genre = genres[random.nextInt(genres.length)];
         
-        // Identifiant genre
         String identifiantGenre;
         if ("homme".equals(genre)) {
             String[] couleurs = {"Red", "Blue", "Green", "Black", "White", "Yellow"};
@@ -1413,14 +1261,12 @@ public class Main {
             identifiantGenre = bijoux[random.nextInt(bijoux.length)];
         }
         
-        // Créer le client
         Client nouveauClient = new Client(
             prenom, surnom, porteMonnaie, popularite,
             criSignificatif, boissonFavorite, boissonSecours, boissonActuelle,
             identifiantGenre, genre
         );
         
-        // Ajouter au bar
         if (leBar.ajouterClient(nouveauClient)) {
             System.out.println("» Client automatique créé avec succès!");
             System.out.println("Prénom: " + prenom);
@@ -1437,16 +1283,11 @@ public class Main {
             try {
                 System.out.println("Total humans created: " + Human.getHumanCount());
             } catch (Throwable t) {
-                // Ignore errors
             }
         }
     }
     
-    // ========== MENU ACTIONS SPÉCIALES ==========
-    
-    /**
-     * Affiche le menu des actions spéciales.
-     */
+
     private static void actionsSpeciales() {
         System.out.println("\n--- Actions Spéciales ---");
         System.out.println("1. Actions de la Patronne");
@@ -1472,9 +1313,7 @@ public class Main {
         }
     }
     
-    /**
-     * Affiche le menu des actions de la patronne.
-     */
+  
     private static void actionsPatronne() {
         System.out.println("\n--- Actions de la Patronne ---");
         System.out.println("1. Récupérer l'argent de la Caisse");
@@ -1504,9 +1343,7 @@ public class Main {
         }
     }
     
-    /**
-     * Permet à la patronne de récupérer de l'argent de la caisse.
-     */
+  
     private static void actionRecupererArgentCaisse() {
         System.out.println("\n=== RÉCUPÉRER ARGENT DE LA CAISSE ===");
         
@@ -1541,9 +1378,7 @@ public class Main {
         patronne.recupererArgentCaisse(caisse, montant);
     }
     
-    /**
-     * Permet à la patronne d'exclure un client du bar.
-     */
+    
     private static void actionExclureClient() {
         System.out.println("\n=== EXCLURE UN CLIENT ===");
         
@@ -1581,9 +1416,7 @@ public class Main {
         System.out.println("\n» " + clientAExclure.getPrenom() + " a été exclu(e) du bar.");
     }
     
-    /**
-     * Permet de modifier le genre et l'identifiant de genre d'un client.
-     */
+  
     private static void actionChangerGenreClient() {
         System.out.println("\n=== CHANGE CLIENT GENDER ===");
         if (leBar == null || leBar.getClients().isEmpty()) {
@@ -1591,7 +1424,6 @@ public class Main {
             return;
         }
 
-        // Afficher les clients
         List<Client> clients = leBar.getClients();
         for (int i = 0; i < clients.size(); i++) {
             System.out.println((i + 1) + ". " + clients.get(i).getPrenom() + " (Genre ID: " + clients.get(i).getIdentifiantGenre() + ")");
@@ -1604,7 +1436,6 @@ public class Main {
 
         Client client = clients.get(choix - 1);
 
-        // Inverser le genre
         if ("homme".equalsIgnoreCase(client.getGenre())) {
             client.setGenre("femme");
             String bijoux = lireStringUtilisateur("New jewelry: ");
@@ -1619,9 +1450,7 @@ public class Main {
         System.out.println("» " + client.getPrenom() + "'s gender has been updated.");
     }
     
-    /**
-     * Affiche le menu des actions sociales.
-     */
+
     private static void actionsSociales() {
         System.out.println("\n--- Actions Sociales ---");
         System.out.println("1. Offrir un verre");
@@ -1651,9 +1480,7 @@ public class Main {
         }
     }
     
-    /**
-     * Gère l'action d'offrir un verre entre deux personnes.
-     */
+
     private static void actionOffrirVerre() {
         System.out.println("\n=== OFFRIR UN VERRE ===");
         
@@ -1662,25 +1489,20 @@ public class Main {
             return;
         }
         
-        // Créer une liste de tous les humains
         List<Human> tousLesHumains = new ArrayList<>();
         
-        // Ajouter la patronne
         if (leBar.getPatronne() != null) {
             tousLesHumains.add(leBar.getPatronne());
         }
         
-        // Ajouter le personnel
         if (leBar.getPersonnel() != null) {
             tousLesHumains.addAll(leBar.getPersonnel());
         }
         
-        // Ajouter les clients
         if (leBar.getClients() != null) {
             tousLesHumains.addAll(leBar.getClients());
         }
         
-        // Ajouter le fournisseur
         if (fournisseur != null) {
             tousLesHumains.add(fournisseur);
         }
@@ -1690,7 +1512,6 @@ public class Main {
             return;
         }
         
-        // Demander qui offre
         System.out.println("\nQui offre ?");
         for (int i = 0; i < tousLesHumains.size(); i++) {
             Human h = tousLesHumains.get(i);
@@ -1710,7 +1531,6 @@ public class Main {
         
         Human offrant = tousLesHumains.get(choixOffrant - 1);
         
-        // Demander qui reçoit
         System.out.println("\nQui reçoit ?");
         for (int i = 0; i < tousLesHumains.size(); i++) {
             Human h = tousLesHumains.get(i);
@@ -1736,7 +1556,6 @@ public class Main {
             return;
         }
         
-        // Demander quelle boisson
         System.out.println("\nQuelle boisson ?");
         List<Boisson> boissonsMenu = (leBar != null) ? leBar.getConsommationsProposees() : Collections.emptyList();
         
@@ -1768,18 +1587,14 @@ public class Main {
             return;
         }
         
-        // Gérer la transaction
         try {
             System.out.println("\n--- Transaction en cours ---");
             offrant.parler("Je t'offre un verre, " + receveur.getPrenom() + " !");
             
-            // Le barman sert la boisson
             barman.servirBoisson(boissonChoisie);
             
-            // L'offrant paie
             barman.recevoirPaiement(offrant, boissonChoisie.getPrixVente());
             
-            // Le receveur boit (seulement si c'est un Client)
             if (receveur instanceof Client) {
                 ((Client) receveur).boire(boissonChoisie);
             } else {
@@ -1797,9 +1612,7 @@ public class Main {
         }
     }
     
-    /**
-     * Gère la commande de boissons auprès du fournisseur.
-     */
+
     private static void actionCommanderFournisseur() {
         System.out.println("\n=== COMMANDER AU FOURNISSEUR ===");
         
@@ -1821,7 +1634,6 @@ public class Main {
         
         Patron patronne = leBar.getPatronne();
         
-        // Afficher les boissons disponibles
         System.out.println("\nQuelle boisson commander ?");
         List<Boisson> boissonsMenu = (leBar != null) ? leBar.getConsommationsProposees() : Collections.emptyList();
         
@@ -1849,7 +1661,6 @@ public class Main {
         
         Boisson boissonChoisie = boissonsMenu.get(choixBoisson - 1);
         
-        // Demander la quantité
         System.out.print("\nQuelle quantité commander ? ");
         int quantite = (int) lireDoubleUtilisateur("");
         
@@ -1858,7 +1669,6 @@ public class Main {
             return;
         }
         
-        // Calculer le coût total
         double coutTotal = boissonChoisie.getPrixAchat() * quantite;
         
         System.out.println("\nRécapitulatif de la commande:");
@@ -1881,13 +1691,10 @@ public class Main {
             return;
         }
         
-        // Exécuter la commande
         System.out.println("\n--- Commande en cours ---");
         
-        // Le barman passe commande
         barman.passerCommande(fournisseur, boissonChoisie, quantite);
         
-        // La patronne paie le fournisseur
         patronne.payerFournisseur(fournisseur, coutTotal);
         
         System.out.println("\n» Commande effectuée avec succès !");
@@ -1895,16 +1702,12 @@ public class Main {
                          barman.getStock().get(boissonChoisie) + " unités");
     }
     
-    /**
-     * Exécute l'événement "Tournée Générale".
-     * Fait réagir tous les personnages du bar (patronne, barman, personnel, clients).
-     */
+    
     private static void actionTourneeGenerale() {
         System.out.println("\n" + "=".repeat(60));
         System.out.println("=== TOURNÉE GÉNÉRALE ! ===");
         System.out.println("=".repeat(60));
         
-        // Vérifications
         if (leBar == null) {
             System.out.println("[!] Bar non initialisé.");
             return;
@@ -1932,15 +1735,15 @@ public class Main {
         
         System.out.println();
         
-        // Réaction du Barman
+
         leBar.getBarman().parler("TOURNÉE GÉNÉRALE !");
         
-        // Réaction de la Patronne
+
         leBar.getPatronne().parler("Tout va bien, les affaires reprennent !");
         
         System.out.println();
         
-        // Réactions du personnel (Serveurs/Serveuses)
+
         System.out.println("--- Réactions du personnel ---");
         for (Human personnel : leBar.getPersonnel()) {
             if (personnel instanceof Serveur || personnel instanceof Serveuse) {
@@ -1950,7 +1753,7 @@ public class Main {
         
         System.out.println();
         
-        // Réactions des clients
+
         System.out.println("--- Réactions des clients ---");
         for (Client client : leBar.getClients()) {
             String cri = client.getCriSignificatif();
