@@ -7,10 +7,11 @@ public enum ValeurCarte {
     HUIT("8", 0, 0, 1, 1),
     NEUF("9", 0, 14, 2, 5), 
     DIX("10", 10, 10, 3, 3),
-    VALET("Valet", 2, 20, 4, 6), 
-    DAME("Dame", 3, 3, 5, 2),
-    ROI("Roi", 4, 4, 6, 4),
-    AS("As", 11, 11, 7, 7);
+    // TRANSLATED: Face cards now show English names
+    VALET("Jack", 2, 20, 4, 6), 
+    DAME("Queen", 3, 3, 5, 2),
+    ROI("King", 4, 4, 6, 4),
+    AS("Ace", 11, 11, 7, 7);
 
     private final String representation;
     private final int pointsNormal;

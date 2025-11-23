@@ -33,16 +33,17 @@ public class PartieDeBelote {
     
     private static class Annonce {
         enum TypeAnnonce {
-            TIERCE(20, "Tierce"),
-            CINQUANTE(50, "50 (Quarte)"),
-            CENT(100, "100 (Quinte)"),
-            CARRE_VALETS(200, "Carré de Valets"),
-            CARRE_NEUF(150, "Carré de 9"),
-            CARRE_AS(100, "Carré d'As"),
-            CARRE_DIX(100, "Carré de 10"),
-            CARRE_ROIS(100, "Carré de Rois"),
-            CARRE_DAMES(100, "Carré de Dames"),
-            BELOTE_REBELOTE(20, "Belote et Rebelote");
+            // TRANSLATED: Announcement names
+            TIERCE(20, "Tierce (Run of 3)"),
+            CINQUANTE(50, "50 (Run of 4)"),
+            CENT(100, "100 (Run of 5)"),
+            CARRE_VALETS(200, "4 Jacks"),
+            CARRE_NEUF(150, "4 Nines"),
+            CARRE_AS(100, "4 Aces"),
+            CARRE_DIX(100, "4 Tens"),
+            CARRE_ROIS(100, "4 Kings"),
+            CARRE_DAMES(100, "4 Queens"),
+            BELOTE_REBELOTE(20, "Belote and Rebelote");
             
             final int points;
             final String nom;
@@ -113,11 +114,12 @@ public class PartieDeBelote {
     
 
     public Equipe demarrerPartie() {
+        // TRANSLATED: Main Title
         System.out.println("\n╔═══════════════════════════════════════════════════════════╗");
-        System.out.println("║      PARTIE DE BELOTE - JUSQU'À 1010 POINTS              ║");
+        System.out.println("║      BELOTE GAME - UP TO 1010 POINTS                      ║");
         System.out.println("╚═══════════════════════════════════════════════════════════╝");
-        System.out.println("Équipe 1: " + equipe1.getNom() + " (" + joueurs[0].getPrenom() + " & " + joueurs[2].getPrenom() + ")");
-        System.out.println("Équipe 2: " + equipe2.getNom() + " (" + joueurs[1].getPrenom() + " & " + joueurs[3].getPrenom() + ")");
+        System.out.println("Team 1: " + equipe1.getNom() + " (" + joueurs[0].getPrenom() + " & " + joueurs[2].getPrenom() + ")");
+        System.out.println("Team 2: " + equipe2.getNom() + " (" + joueurs[1].getPrenom() + " & " + joueurs[3].getPrenom() + ")");
         System.out.println();
         
         int mancheNumero = 1;
@@ -125,8 +127,9 @@ public class PartieDeBelote {
         
         while (scoreEquipe1 < 1010 && scoreEquipe2 < 1010) {
             System.out.println("\n" + "═".repeat(60));
-            System.out.println("MANCHE " + mancheNumero);
-            System.out.println("Score actuel - " + equipe1.getNom() + ": " + scoreEquipe1 + " | " + equipe2.getNom() + ": " + scoreEquipe2);
+            // TRANSLATED: Round info
+            System.out.println("ROUND " + mancheNumero);
+            System.out.println("Current score - " + equipe1.getNom() + ": " + scoreEquipe1 + " | " + equipe2.getNom() + ": " + scoreEquipe2);
             System.out.println("═".repeat(60));
             
             jouerManche();
@@ -137,12 +140,13 @@ public class PartieDeBelote {
         
         Equipe gagnante = (scoreEquipe1 >= 1010) ? equipe1 : equipe2;
         
+        // TRANSLATED: Game Over
         System.out.println("\n╔═══════════════════════════════════════════════════════════╗");
-        System.out.println("║                   FIN DE LA PARTIE                        ║");
+        System.out.println("║                   GAME OVER                               ║");
         System.out.println("╚═══════════════════════════════════════════════════════════╝");
-        System.out.println("Score final - " + equipe1.getNom() + ": " + scoreEquipe1);
+        System.out.println("Final score - " + equipe1.getNom() + ": " + scoreEquipe1);
         System.out.println("            - " + equipe2.getNom() + ": " + scoreEquipe2);
-        System.out.println("\n» VAINQUEUR: " + gagnante.getNom() + " «\n");
+        System.out.println("\n» WINNER: " + gagnante.getNom() + " «\n");
         
         return gagnante;
     }
@@ -166,16 +170,19 @@ public class PartieDeBelote {
         }
         
         Carte carteRetournee = jeu.tirerCarte();
-        System.out.println("\nCarte retournée: " + carteRetournee);
+        // TRANSLATED
+        System.out.println("\nTurned card: " + carteRetournee);
         
         int preneur = faireEncheres(carteRetournee);
         
         if (preneur == -1) {
-            System.out.println("Personne ne prend, la manche est annulée.");
+            // TRANSLATED
+            System.out.println("No one took the bid, round cancelled.");
             return;
         }
         
-        System.out.println(joueurs[preneur].getPrenom() + " prend l'atout: " + atout.name());
+        // TRANSLATED
+        System.out.println(joueurs[preneur].getPrenom() + " takes trump: " + atout.name());
         
         for (int i = 0; i < 4; i++) {
             int nbCartes = (i == preneur) ? 2 : 3;
@@ -197,7 +204,8 @@ public class PartieDeBelote {
         
         for (int pli = 1; pli <= 8; pli++) {
             System.out.println("\n" + "-".repeat(40));
-            System.out.println("PLI " + pli + "/8");
+            // TRANSLATED
+            System.out.println("TRICK " + pli + "/8");
             System.out.println("-".repeat(40));
             
             int gagnantPli = jouerPli(dernierGagnant);
@@ -211,18 +219,21 @@ public class PartieDeBelote {
                 pointsPlis[1] += pointsPli;
             }
             
-            System.out.println("» " + joueurs[gagnantPli].getPrenom() + " remporte le pli (" + pointsPli + " points)");
+            // TRANSLATED
+            System.out.println("» " + joueurs[gagnantPli].getPrenom() + " wins the trick (" + pointsPli + " points)");
         }
         
         if (dernierGagnant == 0 || dernierGagnant == 2) {
             pointsPlis[0] += 10;
-            System.out.println("\n+10 points (10 de der) pour " + equipe1.getNom());
+            // TRANSLATED: "10 de der" means the last 10 points
+            System.out.println("\n+10 points (Last trick) for " + equipe1.getNom());
         } else {
             pointsPlis[1] += 10;
-            System.out.println("\n+10 points (10 de der) pour " + equipe2.getNom());
+            System.out.println("\n+10 points (Last trick) for " + equipe2.getNom());
         }
         
-        System.out.println("\n--- Résultats de la manche ---");
+        // TRANSLATED
+        System.out.println("\n--- Round Results ---");
         System.out.println(equipe1.getNom() + ": " + pointsPlis[0] + " points");
         System.out.println(equipe2.getNom() + ": " + pointsPlis[1] + " points");
         
@@ -232,31 +243,37 @@ public class PartieDeBelote {
             if (pointsPlis[0] >= 82) {
                 scoreEquipe1 += pointsPlis[0];
                 scoreEquipe2 += pointsPlis[1];
-                System.out.println("» " + equipe1.getNom() + " a réussi son contrat!");
+                // TRANSLATED
+                System.out.println("» " + equipe1.getNom() + " fulfilled their contract!");
             } else {
                 scoreEquipe2 += 162; 
-                System.out.println("✗ " + equipe1.getNom() + " a chuté! " + equipe2.getNom() + " prend 162 points!");
+                // TRANSLATED
+                System.out.println("✗ " + equipe1.getNom() + " failed! " + equipe2.getNom() + " takes 162 points!");
             }
         } else {
             if (pointsPlis[1] >= 82) {
                 scoreEquipe1 += pointsPlis[0];
                 scoreEquipe2 += pointsPlis[1];
-                System.out.println("» " + equipe2.getNom() + " a réussi son contrat!");
+                // TRANSLATED
+                System.out.println("» " + equipe2.getNom() + " fulfilled their contract!");
             } else {
                 scoreEquipe1 += 162; 
-                System.out.println("✗ " + equipe2.getNom() + " a chuté! " + equipe1.getNom() + " prend 162 points!");
+                // TRANSLATED
+                System.out.println("✗ " + equipe2.getNom() + " failed! " + equipe1.getNom() + " takes 162 points!");
             }
         }
     }
     
     private int faireEncheres(Carte carteRetournee) {
-        System.out.println("\n=== PHASE D'ENCHÈRES (PREMIER TOUR) ===");
+        // TRANSLATED
+        System.out.println("\n=== BIDDING PHASE (FIRST ROUND) ===");
         
         for (int i = 0; i < 4; i++) {
             int joueurIndex = (joueurActuel + i) % 4;
             Human joueur = joueurs[joueurIndex];
             
-            System.out.println("\n" + joueur.getPrenom() + ", prenez-vous l'atout " + carteRetournee.getCouleur().name() + " ?");
+            // TRANSLATED
+            System.out.println("\n" + joueur.getPrenom() + ", do you take trump " + carteRetournee.getCouleur().name() + " ?");
             
             boolean estJoueurHumain = modeInteractif && nomJoueurHumain != null && 
                                      joueur.getPrenom().equalsIgnoreCase(nomJoueurHumain);
@@ -264,31 +281,37 @@ public class PartieDeBelote {
             if (estJoueurHumain) {
                 List<Carte> mainJoueur = getMainJoueur(joueurIndex);
                 afficherMain(mainJoueur);
-                System.out.print("Votre choix (oui/non): ");
+                // TRANSLATED: Prompt and logic update (yes/no)
+                System.out.print("Your choice (yes/no): ");
                 String reponse = scanner.nextLine().trim().toLowerCase();
                 
-                if (reponse.equals("oui") || reponse.equals("o")) {
+                // FIXED: Changed check from "oui/o" to "yes/y"
+                if (reponse.equals("yes") || reponse.equals("y")) {
                     atout = carteRetournee.getCouleur();
                     return joueurIndex;
                 }
             } else {
                 if (enchereIA(true)) {
-                    System.out.println(joueur.getPrenom() + " prend!");
+                    // TRANSLATED
+                    System.out.println(joueur.getPrenom() + " takes!");
                     atout = carteRetournee.getCouleur();
                     return joueurIndex;
                 } else {
-                    System.out.println(joueur.getPrenom() + " passe.");
+                    // TRANSLATED
+                    System.out.println(joueur.getPrenom() + " passes.");
                 }
             }
         }
         
-        System.out.println("\n=== PHASE D'ENCHÈRES (DEUXIÈME TOUR) ===");
+        // TRANSLATED
+        System.out.println("\n=== BIDDING PHASE (SECOND ROUND) ===");
         
         for (int i = 0; i < 4; i++) {
             int joueurIndex = (joueurActuel + i) % 4;
             Human joueur = joueurs[joueurIndex];
             
-            System.out.println("\n" + joueur.getPrenom() + ", prenez-vous un atout ?");
+            // TRANSLATED
+            System.out.println("\n" + joueur.getPrenom() + ", do you take a trump?");
             
             boolean estJoueurHumain = modeInteractif && nomJoueurHumain != null && 
                                      joueur.getPrenom().equalsIgnoreCase(nomJoueurHumain);
@@ -296,16 +319,18 @@ public class PartieDeBelote {
             if (estJoueurHumain) {
                 List<Carte> mainJoueur = getMainJoueur(joueurIndex);
                 afficherMain(mainJoueur);
-                System.out.print("Voulez-vous prendre ? (oui/non): ");
+                // TRANSLATED: Prompt and logic update
+                System.out.print("Do you want to take? (yes/no): ");
                 String reponse = scanner.nextLine().trim().toLowerCase();
                 
-                if (reponse.equals("oui") || reponse.equals("o")) {
-                    System.out.println("Choisissez l'atout:");
+                // FIXED: Changed check from "oui/o" to "yes/y"
+                if (reponse.equals("yes") || reponse.equals("y")) {
+                    System.out.println("Choose trump:");
                     System.out.println("1. " + Couleur.PIQUE.name());
                     System.out.println("2. " + Couleur.CARREAU.name());
                     System.out.println("3. " + Couleur.TREFLE.name());
                     System.out.println("4. " + Couleur.COEUR.name());
-                    System.out.print("Votre choix (1-4): ");
+                    System.out.print("Your choice (1-4): ");
                     
                     int choix = lireEntier(1, 4);
                     atout = Couleur.values()[choix - 1];
@@ -313,11 +338,11 @@ public class PartieDeBelote {
                 }
             } else {
                 if (enchereIA(false)) {
-                    System.out.println(joueur.getPrenom() + " prend!");
+                    System.out.println(joueur.getPrenom() + " takes!");
                     atout = choixCouleurIA();
                     return joueurIndex;
                 } else {
-                    System.out.println(joueur.getPrenom() + " passe.");
+                    System.out.println(joueur.getPrenom() + " passes.");
                 }
             }
         }
@@ -338,7 +363,8 @@ public class PartieDeBelote {
             int joueurIndex = (premierJoueur + i) % 4;
             Human joueur = joueurs[joueurIndex];
             
-            System.out.println("\nC'est à " + joueur.getPrenom() + " de jouer.");
+            // TRANSLATED
+            System.out.println("\nIt is " + joueur.getPrenom() + "'s turn.");
             
             Carte carteJouee;
             
@@ -371,7 +397,8 @@ public class PartieDeBelote {
                 }
             }
             
-            System.out.println("» " + joueur.getPrenom() + " joue: " + carteJouee);
+            // TRANSLATED
+            System.out.println("» " + joueur.getPrenom() + " plays: " + carteJouee);
             
             cartesPliActuel[joueurIndex] = carteJouee;
             nombreCartesJouees++;
@@ -403,7 +430,8 @@ public class PartieDeBelote {
     private Carte faireJouerJoueurHumain(List<Carte> main, Couleur couleurDemandee, int joueurIndex) {
         while (true) {
             afficherMain(main);
-            System.out.print("Choisissez une carte (1-" + main.size() + "): ");
+            // TRANSLATED
+            System.out.print("Choose a card (1-" + main.size() + "): ");
             
             int choix = lireEntier(1, main.size());
             Carte carteChoisie = main.get(choix - 1);
@@ -412,7 +440,8 @@ public class PartieDeBelote {
                 main.remove(choix - 1);
                 return carteChoisie;
             } else {
-                System.out.println("❌ Coup invalide! Vous devez respecter les règles de la Belote.");
+                // TRANSLATED
+                System.out.println("❌ Invalid move! You must follow Belote rules.");
                 afficherReglesCoup(couleurDemandee, joueurIndex);
             }
         }
@@ -606,7 +635,8 @@ public class PartieDeBelote {
     
    
     private void afficherMain(List<Carte> main) {
-        System.out.println("\nVotre main:");
+        // TRANSLATED
+        System.out.println("\nYour hand:");
         for (int i = 0; i < main.size(); i++) {
             System.out.println((i + 1) + ": " + main.get(i));
         }
@@ -712,10 +742,12 @@ public class PartieDeBelote {
     
    
     private void afficherAnnonces() {
-        System.out.println("\n=== ANNONCES DÉTECTÉES ===");
+        // TRANSLATED
+        System.out.println("\n=== DETECTED ANNOUNCEMENTS ===");
         
         if (annoncesParEquipe.get(0).isEmpty() && annoncesParEquipe.get(1).isEmpty()) {
-            System.out.println("Aucune annonce.");
+            // TRANSLATED
+            System.out.println("No announcements.");
             return;
         }
         
@@ -735,7 +767,8 @@ public class PartieDeBelote {
             }
         }
         
-        System.out.println("\nLes annonces seront validées au 2ème pli.");
+        // TRANSLATED
+        System.out.println("\nAnnouncements will be validated at the 2nd trick.");
     }
     
     
@@ -755,9 +788,10 @@ public class PartieDeBelote {
     
     
     private void validerEtComptabiliserAnnonces() {
-        System.out.println("\n╔══════════════════════════════════════╗");
-        System.out.println("║  VALIDATION DES ANNONCES (PLI 2)    ║");
-        System.out.println("╚══════════════════════════════════════╝");
+        // TRANSLATED
+        System.out.println("\n╔═════════════════════════════════════════════════╗");
+        System.out.println("║  VALIDATING ANNOUNCEMENTS (TRICK 2)             ║");
+        System.out.println("╚═════════════════════════════════════════════════╝");
         
        
         Annonce meilleureE1 = trouverMeilleureAnnonce(annoncesParEquipe.get(0));
@@ -765,26 +799,30 @@ public class PartieDeBelote {
         
         if (meilleureE1 != null && meilleureE2 != null) {
             if (meilleureE1.getPoints() > meilleureE2.getPoints()) {
-                System.out.println("» " + equipe1.getNom() + " marque: " + meilleureE1);
+                // TRANSLATED
+                System.out.println("» " + equipe1.getNom() + " scores: " + meilleureE1);
             } else if (meilleureE2.getPoints() > meilleureE1.getPoints()) {
-                System.out.println("» " + equipe2.getNom() + " marque: " + meilleureE2);
+                // TRANSLATED
+                System.out.println("» " + equipe2.getNom() + " scores: " + meilleureE2);
             } else {
-                System.out.println("Égalité d'annonces : aucune ne compte.");
+                // TRANSLATED
+                System.out.println("Tie in announcements: none count.");
             }
         } else if (meilleureE1 != null) {
-            System.out.println("» " + equipe1.getNom() + " marque: " + meilleureE1);
+            System.out.println("» " + equipe1.getNom() + " scores: " + meilleureE1);
         } else if (meilleureE2 != null) {
-            System.out.println("» " + equipe2.getNom() + " marque: " + meilleureE2);
+            System.out.println("» " + equipe2.getNom() + " scores: " + meilleureE2);
         }
         
         for (Annonce a : annoncesParEquipe.get(0)) {
             if (a.type == Annonce.TypeAnnonce.BELOTE_REBELOTE) {
-                System.out.println("» " + equipe1.getNom() + " a la Belote-Rebelote (+20 pts)");
+                // TRANSLATED
+                System.out.println("» " + equipe1.getNom() + " has Belote-Rebelote (+20 pts)");
             }
         }
         for (Annonce a : annoncesParEquipe.get(1)) {
             if (a.type == Annonce.TypeAnnonce.BELOTE_REBELOTE) {
-                System.out.println("» " + equipe2.getNom() + " a la Belote-Rebelote (+20 pts)");
+                System.out.println("» " + equipe2.getNom() + " has Belote-Rebelote (+20 pts)");
             }
         }
     }
@@ -860,26 +898,27 @@ public class PartieDeBelote {
     
     
     private void afficherReglesCoup(Couleur couleurDemandee, int joueurIndex) {
-        System.out.println("\n» Règles applicables:");
+        // TRANSLATED: Rules explanation
+        System.out.println("\n» Applicable rules:");
         
         List<Carte> main = getMainJoueur(joueurIndex);
         boolean aCouleur = main.stream().anyMatch(c -> c.getCouleur() == couleurDemandee);
         
         if (aCouleur) {
-            System.out.println("  » Vous DEVEZ jouer la couleur demandée (" + couleurDemandee + ")");
+            System.out.println("  » You MUST follow suit (" + couleurDemandee + ")");
             if (couleurDemandee == atout) {
-                System.out.println("  » Vous devez MONTER à l'atout si possible");
+                System.out.println("  » You must TRUMP UP if possible");
             }
         } else {
             Carte plusFortAtout = trouverPlusFortAtoutDuPli();
             if (plusFortAtout != null && !verifiePartenaireMene(joueurIndex)) {
-                System.out.println("  » Un adversaire a coupé, vous devez SURCOUPER si possible");
+                System.out.println("  » Opponent trumped, you must OVERTRUMP if possible");
             } else {
                 boolean aAtout = main.stream().anyMatch(c -> c.getCouleur() == atout);
                 if (aAtout) {
-                    System.out.println("  » Vous devez COUPER avec un atout");
+                    System.out.println("  » You must TRUMP");
                 } else {
-                    System.out.println("  » Vous pouvez défausser n'importe quelle carte");
+                    System.out.println("  » You can discard any card");
                 }
             }
         }
@@ -905,10 +944,12 @@ public class PartieDeBelote {
                 if (valeur >= min && valeur <= max) {
                     return valeur;
                 } else {
-                    System.out.print("Veuillez entrer un nombre entre " + min + " et " + max + ": ");
+                    // TRANSLATED
+                    System.out.print("Please enter a number between " + min + " and " + max + ": ");
                 }
             } catch (NumberFormatException e) {
-                System.out.print("Entrée invalide. Veuillez entrer un nombre: ");
+                // TRANSLATED
+                System.out.print("Invalid input. Please enter a number: ");
             }
         }
     }

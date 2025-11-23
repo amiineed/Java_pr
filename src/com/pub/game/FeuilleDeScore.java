@@ -26,16 +26,19 @@ public class FeuilleDeScore {
     }
     
     public void afficherClassement() {
-        System.out.println("\n=== CLASSEMENT DU TOURNOI ===");
+        // TRANSLATED: "CLASSEMENT DU TOURNOI" -> "TOURNAMENT RANKING"
+        System.out.println("\n=== TOURNAMENT RANKING ===");
         if (equipes.isEmpty()) {
-            System.out.println("Aucune équipe inscrite.");
+            // TRANSLATED: "Aucune équipe inscrite." -> "No teams registered."
+            System.out.println("No teams registered.");
             return;
         }
         
         equipes.sort((e1, e2) -> Integer.compare(e2.getPoints(), e1.getPoints()));
         
+        // TRANSLATED HEADERS: Pos, Team, Points, Played, Won, Lost
         System.out.printf("%-3s %-20s %-8s %-8s %-8s %-8s%n", 
-                         "Pos", "Équipe", "Points", "Joués", "Gagnés", "Perdus");
+                         "Pos", "Team", "Points", "Played", "Won", "Lost");
         System.out.println("--------------------------------------------------------");
         
         int rangActuel = 1;
@@ -58,9 +61,11 @@ public class FeuilleDeScore {
     }
     
     public void afficherResultats() {
-        System.out.println("\n=== RÉSULTATS DES MATCHS ===");
+        // TRANSLATED: "RÉSULTATS DES MATCHS" -> "MATCH RESULTS"
+        System.out.println("\n=== MATCH RESULTS ===");
         if (resultats.isEmpty()) {
-            System.out.println("Aucun match joué.");
+            // TRANSLATED: "Aucun match joué." -> "No matches played."
+            System.out.println("No matches played.");
             return;
         }
         

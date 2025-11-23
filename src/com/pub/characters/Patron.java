@@ -10,41 +10,50 @@ import com.pub.exceptions.OutOfStockException;
 public class Patron extends Human {
     
     public Patron(String prenom, String surnom, double porteMonnaie) throws BarException {
-        super(prenom, surnom, porteMonnaie, 100, "Bonjour.");
+        // "Bonjour." -> "Hello."
+        super(prenom, surnom, porteMonnaie, 100, "Hello.");
         if (porteMonnaie < 500) {
-            throw new BarException("Le patron doit avoir au moins 500 euros pour démarrer un bar!");
+            // Exception message translated
+            throw new BarException("The owner must have at least 500 euros to start a bar!");
         }
     }
     
 
     public void payerFournisseur(Fournisseur fournisseur, double montant) {
         if (fournisseur == null || montant <= 0) {
-            parler("Paiement invalide!");
+            // "Paiement invalide!" -> "Invalid payment!"
+            parler("Invalid payment!");
             return;
         }
         
         if (payer(montant)) {
             fournisseur.recevoirArgent(montant);
-            parler("J'ai payé " + montant + " euros à " + fournisseur.getPrenom() + " (" + fournisseur.getEntreprise() + ").");
-            fournisseur.parler("Merci pour le paiement ! À bientôt pour la prochaine livraison.");
+            // "J'ai payé..." -> "I paid..."
+            parler("I paid " + montant + " euros to " + fournisseur.getPrenom() + " (" + fournisseur.getEntreprise() + ").");
+            // Supplier response translated
+            fournisseur.parler("Thanks for the payment! See you for the next delivery.");
         } else {
-            parler("Je n'ai pas assez d'argent pour payer " + fournisseur.getPrenom() + "!");
+            // "Je n'ai pas assez d'argent..." -> "I don't have enough money..."
+            parler("I don't have enough money to pay " + fournisseur.getPrenom() + "!");
         }
     }
  
     public boolean recupererArgentCaisse(Caisse caisse, double montant) {
         if (caisse == null || montant <= 0) {
-            parler("Opération invalide!");
+            // "Opération invalide!" -> "Invalid operation!"
+            parler("Invalid operation!");
             return false;
         }
         
         if (caisse.retirerMontant(montant)) {
             recevoirArgent(montant);
-            parler("J'ai récupéré " + montant + " euros de la caisse. Mon portefeuille: " + 
+            // "J'ai récupéré..." -> "I collected..."
+            parler("I collected " + montant + " euros from the register. My wallet: " + 
                    String.format("%.2f", getPorteMonnaie()) + " euros.");
             return true;
         } else {
-            parler("Pas assez d'argent dans la caisse pour retirer " + montant + " euros!");
+            // "Pas assez d'argent..." -> "Not enough money..."
+            parler("Not enough money in the register to withdraw " + montant + " euros!");
             return false;
         }
     }
@@ -52,21 +61,26 @@ public class Patron extends Human {
     @Override
     public void offrirVerre(Human receveur, Boisson boisson, Barman barman) {
         if (receveur == null || boisson == null || barman == null) {
-            parler("Impossible d'offrir un verre pour le moment.");
+            // "Impossible d'offrir..." -> "Impossible to offer..."
+            parler("Impossible to offer a drink at the moment.");
             return;
         }
-        this.parler("Je t'offre un " + boisson.getNom() + ", " + receveur.getPrenom() + " !");
+        // "Je t'offre un..." -> "I'm treating you to a..."
+        this.parler("I'm treating you to a " + boisson.getNom() + ", " + receveur.getPrenom() + "!");
         try {
             barman.servirBoisson(boisson);
             receveur.boire(boisson);
-            parler("Santé !");
+            // "Santé !" -> "Cheers!"
+            parler("Cheers!");
         } catch (OutOfStockException e) {
-            parler("Oh, zut. " + e.getMessage());
+            // "Oh, zut." -> "Oh, shoot."
+            parler("Oh, shoot. " + e.getMessage());
         }
     }
     
     @Override
     public void sePresenter() {
-        parler("Bonjour, je suis " + getPrenom() + " '" + getSurnom() + "', le propriétaire de cet établissement.");
+        // Intro translated
+        parler("Hello, I am " + getPrenom() + " '" + getSurnom() + "', the owner of this establishment.");
     }
 }

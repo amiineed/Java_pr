@@ -74,6 +74,7 @@ public class Equipe {
     
     @Override
     public String toString() {
+        // "pts" works in English as well, so this is safe.
         return nom + " (" + joueur1.getPrenom() + " & " + joueur2.getPrenom() + ") - " + points + " pts";
     }
 }

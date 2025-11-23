@@ -7,7 +7,8 @@ public class Serveur extends Human implements JoueurBelote {
     private int tailleBiceps;
     
     public Serveur(String prenom, String surnom, double porteMonnaie, int tailleBiceps) {
-        super(prenom, surnom, porteMonnaie, 30, "Et voilà !");
+        // "Et voilà !" -> "Here you go!"
+        super(prenom, surnom, porteMonnaie, 30, "Here you go!");
         this.tailleBiceps = tailleBiceps;
     }
     
@@ -22,12 +23,14 @@ public class Serveur extends Human implements JoueurBelote {
     @Override
     public void boire(Boisson boisson) {
         if (boisson == null) {
-            parler("Je n'ai rien à boire.");
+            // "Je n'ai rien à boire." -> "I have nothing to drink."
+            parler("I have nothing to drink.");
             return;
         }
         
         if (!boisson.getNom().equalsIgnoreCase("Water")) {
-            parler("Désolé, je ne bois que de l'eau pendant le service.");
+            // "Désolé..." -> "Sorry..."
+            parler("Sorry, I only drink water during service.");
         } else {
             super.boire(boisson);
         }
@@ -35,6 +38,7 @@ public class Serveur extends Human implements JoueurBelote {
     
     @Override
     public void sePresenter() {
-        parler("Bonjour, je suis " + getPrenom() + " '" + getSurnom() + "', serveur avec des biceps de " + tailleBiceps + "cm!");
+        // Intro translated
+        parler("Hello, I am " + getPrenom() + " '" + getSurnom() + "', a server with " + tailleBiceps + "cm biceps!");
     }
 }

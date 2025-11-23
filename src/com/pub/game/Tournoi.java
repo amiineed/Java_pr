@@ -88,38 +88,44 @@ public class Tournoi {
     
     public void ouvrirInscriptions() {
         this.inscriptionsOuvertes = true;
-        System.out.println("Les inscriptions pour le tournoi sont maintenant ouvertes!");
+        // TRANSLATED
+        System.out.println("Tournament registrations are now open!");
     }
     
     
     public void fermerInscriptions() {
         this.inscriptionsOuvertes = false;
-        System.out.println("Les inscriptions pour le tournoi sont maintenant fermées.");
+        // TRANSLATED
+        System.out.println("Tournament registrations are now closed.");
     }
     
    
     public void inscrireEquipe(String nomEquipe, Human joueur1, Human joueur2) {
         if (!inscriptionsOuvertes) {
-            System.out.println("Les inscriptions ne sont pas ouvertes!");
+            // TRANSLATED
+            System.out.println("Registrations are not open!");
             return;
         }
         
         if (tournoiDemarre) {
-            System.out.println("Le tournoi a déjà démarré!");
+            // TRANSLATED
+            System.out.println("The tournament has already started!");
             return;
         }
         
         for (Equipe equipe : equipesInscrites) {
             if (equipe.getJoueur1() == joueur1 || equipe.getJoueur2() == joueur1 ||
                 equipe.getJoueur1() == joueur2 || equipe.getJoueur2() == joueur2) {
-                System.out.println("Un des joueurs est déjà inscrit dans une équipe!");
+                // TRANSLATED
+                System.out.println("One of the players is already registered in a team!");
                 return;
             }
         }
         
         double fraisParJoueur = fraisInscription / 2.0;
         if (joueur1.getPorteMonnaie() < fraisParJoueur || joueur2.getPorteMonnaie() < fraisParJoueur) {
-            System.out.println("Un des joueurs n'a pas assez d'argent pour payer les frais d'inscription!");
+            // TRANSLATED
+            System.out.println("One of the players does not have enough money to pay the registration fee!");
             return;
         }
         
@@ -152,10 +158,11 @@ public class Tournoi {
         
         int personnelDisponibleApres = totalPersonnel - personnelInscrits - nouveauxPersonnelInscrits;
         if (nouveauxPersonnelInscrits > 0 && personnelDisponibleApres < 1) {
-            System.out.println("Action impossible. Il doit rester au moins un membre du personnel pour servir les clients.");
-            System.out.println("Personnel total: " + totalPersonnel + 
-                             " | Déjà inscrits: " + personnelInscrits + 
-                             " | Cette équipe: " + nouveauxPersonnelInscrits);
+            // TRANSLATED
+            System.out.println("Action impossible. At least one staff member must remain to serve clients.");
+            System.out.println("Total staff: " + totalPersonnel + 
+                             " | Already registered: " + personnelInscrits + 
+                             " | This team: " + nouveauxPersonnelInscrits);
             return;
         }
         
@@ -166,13 +173,15 @@ public class Tournoi {
         equipesInscrites.add(equipe);
         feuilleDeScore.ajouterEquipe(equipe);
         
-        System.out.println("Équipe '" + nomEquipe + "' inscrite avec succès!");
+        // TRANSLATED
+        System.out.println("Team '" + nomEquipe + "' registered successfully!");
     }
     
     
     public void demarrerTournoi() {
         if (equipesInscrites.size() < 2) {
-            System.out.println("Pas assez d'équipes pour démarrer le tournoi (minimum 2 requis)!");
+            // TRANSLATED
+            System.out.println("Not enough teams to start the tournament (minimum 2 required)!");
             return;
         }
         
@@ -188,15 +197,17 @@ public class Tournoi {
         }
         
         int nombreMatchs = calendrierDesMatchs.size();
-        System.out.println("Le tournoi de Belote démarre avec " + equipesInscrites.size() + " équipes!");
-        System.out.println("Format: Round Robin (championnat) - " + nombreMatchs + " matchs au total.");
-        System.out.println("Chaque équipe rencontrera toutes les autres équipes.");
+        // TRANSLATED
+        System.out.println("The Belote tournament starts with " + equipesInscrites.size() + " teams!");
+        System.out.println("Format: Round Robin (League) - " + nombreMatchs + " total matches.");
+        System.out.println("Each team will face every other team.");
     }
     
   
     public boolean jouerProchainMatch(String nomJoueurHumain) {
         if (!tournoiDemarre || tournoiTermine) {
-            System.out.println("Le tournoi n'est pas démarré ou est déjà terminé.");
+            // TRANSLATED
+            System.out.println("The tournament has not started or is already finished.");
             return false;
         }
         
@@ -210,7 +221,8 @@ public class Tournoi {
         
         if (prochainMatch == null) {
             tournoiTermine = true;
-            System.out.println("» Le tournoi est terminé!");
+            // TRANSLATED
+            System.out.println("» The tournament is finished!");
             System.out.println("\n" + "=".repeat(50));
             feuilleDeScore.afficherClassement();
             System.out.println("=".repeat(50));
@@ -233,10 +245,12 @@ public class Tournoi {
         
         PartieDeBelote partie;
         if (joueurHumainParticipe) {
-            System.out.println("\n» MODE INTERACTIF: Vous participez à ce match!");
+            // TRANSLATED
+            System.out.println("\n» INTERACTIVE MODE: You are participating in this match!");
             partie = new PartieDeBelote(equipe1, equipe2, true, nomJoueurHumain);
         } else {
-            System.out.println("\n» MODE SIMULATION: Match joué par l'IA...");
+            // TRANSLATED
+            System.out.println("\n» SIMULATION MODE: Match played by AI...");
             partie = new PartieDeBelote(equipe1, equipe2, false, null);
         }
         
@@ -260,12 +274,14 @@ public class Tournoi {
             Boisson biere = bar.trouverBoisson("Beer");
             
             if (barman != null && biere != null) {
-                System.out.println("\n--- Après-match : Les perdants offrent des verres ---");
+                // TRANSLATED
+                System.out.println("\n--- Post-match: Losers buy drinks ---");
                 equipe2.getJoueur1().offrirVerre(equipe1.getJoueur1(), biere, barman);
                 equipe2.getJoueur2().offrirVerre(equipe1.getJoueur2(), biere, barman);
             }
             
-            feuilleDeScore.ajouterResultat(equipe1.getNom() + " bat " + equipe2.getNom());
+            // TRANSLATED
+            feuilleDeScore.ajouterResultat(equipe1.getNom() + " beats " + equipe2.getNom());
             prochainMatch.setResultat(equipe1, score1, score2);
         } else {
             equipe1.enregistrerMatch(false);
@@ -282,12 +298,14 @@ public class Tournoi {
             Boisson biere = bar.trouverBoisson("Beer");
             
             if (barman != null && biere != null) {
-                System.out.println("\n--- Après-match : Les perdants offrent des verres ---");
+                // TRANSLATED
+                System.out.println("\n--- Post-match: Losers buy drinks ---");
                 equipe1.getJoueur1().offrirVerre(equipe2.getJoueur1(), biere, barman);
                 equipe1.getJoueur2().offrirVerre(equipe2.getJoueur2(), biere, barman);
             }
             
-            feuilleDeScore.ajouterResultat(equipe2.getNom() + " bat " + equipe1.getNom());
+            // TRANSLATED
+            feuilleDeScore.ajouterResultat(equipe2.getNom() + " beats " + equipe1.getNom());
             prochainMatch.setResultat(equipe2, score2, score1);
         }
         
@@ -297,22 +315,26 @@ public class Tournoi {
     
     private void jouerMatch(Equipe equipe1, Equipe equipe2) {
         System.out.println("\n=== MATCH: " + equipe1.getNom() + " vs " + equipe2.getNom() + " ===");
-        System.out.println("Les joueurs s'affrontent à la Belote...");
+        // TRANSLATED
+        System.out.println("Players are battling at Belote...");
     }
     
    
     public void jouerTournoiComplet() throws TournoiException {
         if (!tournoiDemarre) {
-            throw new TournoiException("Le tournoi n'est pas démarré.");
+            // TRANSLATED
+            throw new TournoiException("The tournament has not started.");
         }
         
         if (tournoiTermine) {
-            throw new TournoiException("Le tournoi est déjà terminé.");
+            // TRANSLATED
+            throw new TournoiException("The tournament is already finished.");
         }
         
-        System.out.println("\n» Lancement du tournoi complet en mode SIMULATION...");
-        System.out.println("Tous les matchs seront joués automatiquement par l'IA.");
-        System.out.println("Format: Round Robin - Chaque équipe rencontre toutes les autres.\n");
+        // TRANSLATED
+        System.out.println("\n» Launching full tournament in SIMULATION mode...");
+        System.out.println("All matches will be played automatically by AI.");
+        System.out.println("Format: Round Robin - Each team meets all others.\n");
         
         int nombreMatchsTotal = calendrierDesMatchs.size();
         int nombreMatchsJoues = 0;
@@ -323,19 +345,23 @@ public class Tournoi {
             }
         }
         
-        System.out.println("Matchs restants: " + (nombreMatchsTotal - nombreMatchsJoues) + "/" + nombreMatchsTotal + "\n");
+        // TRANSLATED
+        System.out.println("Remaining matches: " + (nombreMatchsTotal - nombreMatchsJoues) + "/" + nombreMatchsTotal + "\n");
         
         int compteur = nombreMatchsJoues;
         while (jouerProchainMatch(null)) {
             compteur++;
-            System.out.println("\nMatch " + compteur + "/" + nombreMatchsTotal + " terminé.");
+            // TRANSLATED
+            System.out.println("\nMatch " + compteur + "/" + nombreMatchsTotal + " finished.");
             System.out.println("-".repeat(50));
         }
         
         if (compteur == nombreMatchsJoues) {
-            System.out.println("» Aucun match à jouer.");
+            // TRANSLATED
+            System.out.println("» No matches to play.");
         } else {
-            System.out.println("\n» Tournoi terminé : " + (compteur - nombreMatchsJoues) + " match(s) joué(s).");
+            // TRANSLATED
+            System.out.println("\n» Tournament finished : " + (compteur - nombreMatchsJoues) + " match(es) played.");
             
             distribuerRecompenses();
         }
@@ -343,9 +369,10 @@ public class Tournoi {
     
    
     public void afficherEquipesInscrites() {
-        System.out.println("\n=== ÉQUIPES INSCRITES ===");
+        // TRANSLATED
+        System.out.println("\n=== REGISTERED TEAMS ===");
         if (equipesInscrites.isEmpty()) {
-            System.out.println("Aucune équipe inscrite.");
+            System.out.println("No teams registered.");
             return;
         }
         
@@ -361,51 +388,61 @@ public class Tournoi {
    
     private void distribuerRecompenses() throws TournoiException {
         System.out.println("\n" + "=".repeat(60));
-        System.out.println("DISTRIBUTION DES RÉCOMPENSES");
+        // TRANSLATED
+        System.out.println("REWARD DISTRIBUTION");
         System.out.println("=".repeat(60));
         
         
         double potTotal = fraisInscription * equipesInscrites.size();
-        System.out.println("\nPot total (frais d'inscription): " + String.format("%.2f", potTotal) + " euros");
+        // TRANSLATED
+        System.out.println("\nTotal Pot (Registration fees): " + String.format("%.2f", potTotal) + " euros");
         
         Barman barman = bar.getBarman();
         if (barman == null) {
-            throw new TournoiException("Aucun barman trouvé pour accéder à la caisse.");
+            // TRANSLATED
+            throw new TournoiException("No bartender found to access the cash register.");
         }
         
         Caisse caisse = barman.getCaisse();
         if (caisse == null) {
-            throw new TournoiException("Aucune caisse trouvée.");
+            // TRANSLATED
+            throw new TournoiException("No cash register found.");
         }
         
         if (caisse.getMontantTotal() < potTotal) {
-            throw new TournoiException("Fonds insuffisants dans la caisse pour payer les gains ! " +
-                                     "Requis: " + String.format("%.2f", potTotal) + " euros, " +
-                                     "Disponible: " + String.format("%.2f", caisse.getMontantTotal()) + " euros");
+            // TRANSLATED
+            throw new TournoiException("Insufficient funds in the register to pay winnings! " +
+                                     "Required: " + String.format("%.2f", potTotal) + " euros, " +
+                                     "Available: " + String.format("%.2f", caisse.getMontantTotal()) + " euros");
         }
         
         boolean retireReussi = caisse.retirerMontant(potTotal);
         if (!retireReussi) {
-            throw new TournoiException("Échec du retrait des fonds de la caisse.");
+            // TRANSLATED
+            throw new TournoiException("Failed to withdraw funds from the register.");
         }
         
-        System.out.println("» Montant retiré de la caisse.");
+        // TRANSLATED
+        System.out.println("» Amount withdrawn from register.");
         
         Patron patronne = bar.getPatronne();
         if (patronne == null) {
-            throw new TournoiException("Aucune patronne trouvée pour recevoir sa part.");
+            // TRANSLATED
+            throw new TournoiException("No owner found to receive their share.");
         }
         
         double partPatronne = potTotal * 0.5;
         patronne.recevoirArgent(partPatronne);
-        System.out.println("» Part de la Patronne (50%): " + String.format("%.2f", partPatronne) + " euros versés à " + patronne.getPrenom());
+        // TRANSLATED
+        System.out.println("» Owner's share (50%): " + String.format("%.2f", partPatronne) + " euros paid to " + patronne.getPrenom());
         
         
         List<Equipe> equipesTriees = new ArrayList<>(equipesInscrites);
         equipesTriees.sort((e1, e2) -> Integer.compare(e2.getPoints(), e1.getPoints()));
         
         if (equipesTriees.isEmpty()) {
-            System.out.println("Aucune équipe à récompenser.");
+            // TRANSLATED
+            System.out.println("No teams to reward.");
             return;
         }
         
@@ -427,13 +464,16 @@ public class Tournoi {
         double partParJoueur = partParEquipe / 2.0;
         
         System.out.println("\n" + "-".repeat(60));
-        System.out.println("GAGNANTS DU TOURNOI");
+        // TRANSLATED
+        System.out.println("TOURNAMENT WINNERS");
         System.out.println("-".repeat(60));
         
         if (gagnants.size() == 1) {
-            System.out.println("» Équipe victorieuse: " + gagnants.get(0).getNom() + " (" + pointsMax + " points)");
+            // TRANSLATED
+            System.out.println("» Victorious Team: " + gagnants.get(0).getNom() + " (" + pointsMax + " points)");
         } else {
-            System.out.println("» Égalité! " + gagnants.size() + " équipes gagnantes (" + pointsMax + " points):");
+            // TRANSLATED
+            System.out.println("» Tie! " + gagnants.size() + " winning teams (" + pointsMax + " points):");
         }
         
         StringBuilder nomsGagnants = new StringBuilder();
@@ -446,8 +486,9 @@ public class Tournoi {
             equipe.getJoueur1().recevoirArgent(partParJoueur);
             equipe.getJoueur2().recevoirArgent(partParJoueur);
             
-            System.out.println("    » Récompense par équipe: " + String.format("%.2f", partParEquipe) + " euros");
-            System.out.println("    » Récompense par joueur: " + String.format("%.2f", partParJoueur) + " euros");
+            // TRANSLATED
+            System.out.println("    » Reward per team: " + String.format("%.2f", partParEquipe) + " euros");
+            System.out.println("    » Reward per player: " + String.format("%.2f", partParJoueur) + " euros");
             
             if (nomsGagnants.length() > 0) {
                 nomsGagnants.append(", ");
@@ -456,7 +497,8 @@ public class Tournoi {
         }
         
         System.out.println("-".repeat(60));
-        System.out.println("Total distribué aux gagnants: " + String.format("%.2f", partGagnants) + " euros");
+        // TRANSLATED
+        System.out.println("Total distributed to winners: " + String.format("%.2f", partGagnants) + " euros");
         System.out.println("=".repeat(60));
         
         
@@ -464,26 +506,29 @@ public class Tournoi {
         
         try (PrintWriter writer = new PrintWriter(new FileWriter("logs/tournoi_resume.txt", true))) {
             writer.println("=".repeat(60));
-            writer.println("TOURNOI TERMINÉ - " + new java.util.Date());
+            // TRANSLATED: Log file content
+            writer.println("TOURNAMENT FINISHED - " + new java.util.Date());
             writer.println("=".repeat(60));
             writer.println("Bar: " + bar.getNom());
-            writer.println("Nombre d'équipes: " + equipesInscrites.size());
-            writer.println("Pot total: " + String.format("%.2f", potTotal) + " euros");
-            writer.println("Part Patronne (50%): " + String.format("%.2f", partPatronne) + " euros");
-            writer.println("Part Gagnants (50%): " + String.format("%.2f", partGagnants) + " euros");
-            writer.println("\nGagnants: " + nomsGagnants.toString());
+            writer.println("Number of teams: " + equipesInscrites.size());
+            writer.println("Total pot: " + String.format("%.2f", potTotal) + " euros");
+            writer.println("Owner Share (50%): " + String.format("%.2f", partPatronne) + " euros");
+            writer.println("Winners Share (50%): " + String.format("%.2f", partGagnants) + " euros");
+            writer.println("\nWinners: " + nomsGagnants.toString());
             if (gagnants.size() > 1) {
-                writer.println("(Égalité entre " + gagnants.size() + " équipes)");
+                writer.println("(Tie between " + gagnants.size() + " teams)");
             }
             writer.println("Points: " + pointsMax);
-            writer.println("Récompense par équipe: " + String.format("%.2f", partParEquipe) + " euros");
-            writer.println("Récompense par joueur: " + String.format("%.2f", partParJoueur) + " euros");
+            writer.println("Reward per team: " + String.format("%.2f", partParEquipe) + " euros");
+            writer.println("Reward per player: " + String.format("%.2f", partParJoueur) + " euros");
             writer.println("=".repeat(60));
             writer.println();
             
-            System.out.println("\n» Résumé enregistré dans 'logs/tournoi_resume.txt'");
+            // TRANSLATED
+            System.out.println("\n» Summary saved in 'logs/tournoi_resume.txt'");
         } catch (IOException e) {
-            System.out.println("[!] Erreur lors de l'écriture du fichier de résumé: " + e.getMessage());
+            // TRANSLATED
+            System.out.println("[!] Error writing summary file: " + e.getMessage());
         }
     }
     

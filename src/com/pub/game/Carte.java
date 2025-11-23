@@ -46,7 +46,7 @@ public class Carte {
     
     @Override
     public String toString() {
-        return valeur.toString() + " de " + couleur;
+        return valeur.toString() + " of " + couleur;
     }
     
     @Override

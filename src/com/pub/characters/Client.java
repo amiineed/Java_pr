@@ -3,7 +3,13 @@ package com.pub.characters;
 import com.pub.bar.Boisson;
 import com.pub.bar.BoissonAlcoolisee;
 import com.pub.game.JoueurBelote;
+import com.pub.game.NiveauBelote; // <--- ADDED THIS IMPORT
 
+/**
+ * Represents a bar client with their preferences and statistics.
+ * * @author Amine MOUSSAIF & Naomi NKETSIAH
+ * @version 1.0
+ */
 public class Client extends Human implements JoueurBelote {
     private Boisson boissonFavorite;
     private Boisson boissonFavoriteSecours;
@@ -14,6 +20,26 @@ public class Client extends Human implements JoueurBelote {
     
     private int nombreVerresConsommes;
     
+    // Added strictly for the interface implementation logic to work
+    private int matchsTournoiJoues;
+    private int matchsTournoiGagnes;
+    private int matchsTournoiPerdus;
+    private int pointsTournoi;
+    private NiveauBelote niveauBelote; // <--- CHANGED FROM int TO NiveauBelote
+
+    /**
+     * Constructs a new client.
+     * * @param prenom the first name
+     * @param surnom the nickname
+     * @param porteMonnaie the money available
+     * @param popularite the popularity level
+     * @param criSignificatif the client's signature yell/catchphrase
+     * @param boissonFavorite the favorite drink
+     * @param boissonFavoriteSecours the backup favorite drink
+     * @param boissonActuelle the current drink
+     * @param identifiantGenre the gender identifier (e.g., text on t-shirt)
+     * @param genre the gender (for logic)
+     */
     public Client(String prenom, String surnom, double porteMonnaie, int popularite, 
                   String criSignificatif, Boisson boissonFavorite, Boisson boissonFavoriteSecours, Boisson boissonActuelle, String identifiantGenre, String genre) {
         super(prenom, surnom, porteMonnaie, popularite, criSignificatif);
@@ -26,7 +52,10 @@ public class Client extends Human implements JoueurBelote {
         this.nombreVerresConsommes = 0;
     }
     
-  
+    /**
+     * Copy constructor.
+     * * @param other the client to copy
+     */
     public Client(Client other) {
         super(other.getPrenom(), other.getSurnom(), other.getPorteMonnaie(), other.getPopularite(), other.getCriSignificatif());
         this.boissonFavorite = other.boissonFavorite;
@@ -39,6 +68,8 @@ public class Client extends Human implements JoueurBelote {
         this.setNiveauBelote(other.getNiveauBelote());
        
     }
+    
+    // [Standard Getters and Setters]
     
     public Boisson getBoissonFavorite() {
         return boissonFavorite;
@@ -87,11 +118,20 @@ public class Client extends Human implements JoueurBelote {
     public void setGenre(String genre) {
         this.genre = genre;
     }
+
+    // FIXED: Changed 'int' to 'NiveauBelote' to match the interface
+    public NiveauBelote getNiveauBelote() { 
+        return niveauBelote; 
+    }
+    
+    public void setNiveauBelote(NiveauBelote niveau) { 
+        this.niveauBelote = niveau; 
+    }
     
     @Override
     public void boire(Boisson boisson) {
         if (boisson == null) {
-            parler("Je n'ai rien à boire.");
+            parler("I have nothing to drink.");
             return;
         }
         this.boissonActuelle = boisson;
@@ -106,7 +146,7 @@ public class Client extends Human implements JoueurBelote {
         } else {
             cri = cri + " ";
         }
-        parler(cri + "Ça fait du bien!");
+        parler(cri + "That hits the spot!");
     }
     
     public int getNombreVerresConsommes() {
@@ -129,7 +169,6 @@ public class Client extends Human implements JoueurBelote {
         return pointsTournoi;
     }
     
-
     public void enregistrerMatchTournoi(boolean victoire) {
         this.matchsTournoiJoues++;
         if (victoire) {
@@ -140,41 +179,40 @@ public class Client extends Human implements JoueurBelote {
         }
     }
     
-   
     public String getStatistiquesDetailles() {
         StringBuilder stats = new StringBuilder();
         stats.append("\n╔═══════════════════════════════════════════════════════════╗\n");
-        stats.append(String.format("║        STATISTIQUES DE %-32s║\n", getPrenom().toUpperCase()));
+        stats.append(String.format("║        STATISTICS OF %-36s║\n", getPrenom().toUpperCase()));
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
-        stats.append(String.format("║ Surnom : %-48s║\n", getSurnom()));
-        stats.append(String.format("║ Argent disponible : %-36s║\n", 
+        stats.append(String.format("║ Nickname : %-46s║\n", getSurnom()));
+        stats.append(String.format("║ Available cash : %-40s║\n", 
                                    String.format("%.2f euros", getPorteMonnaie())));
-        stats.append(String.format("║ Niveau d'alcoolémie : %-32s║\n", 
+        stats.append(String.format("║ Blood Alcohol Level : %-33s║\n", 
                                    String.format("%.3f g/L", niveauAlcoolemie)));
         
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
-        stats.append("║  STATISTIQUES DE CONSOMMATION                             ║\n");
+        stats.append("║  CONSUMPTION STATISTICS                                   ║\n");
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
-        stats.append(String.format("║ Total de verres consommés : %-33s║\n", nombreVerresConsommes));
+        stats.append(String.format("║ Total drinks consumed : %-33s║\n", nombreVerresConsommes));
         
         if (boissonFavorite != null) {
-            stats.append(String.format("║ Boisson favorite : %-38s║\n", boissonFavorite.getNom()));
+            stats.append(String.format("║ Favorite drink : %-40s║\n", boissonFavorite.getNom()));
         }
         
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
-        stats.append("║  STATISTIQUES DE TOURNOI                                  ║\n");
+        stats.append("║  TOURNAMENT STATISTICS                                    ║\n");
         stats.append("╠═══════════════════════════════════════════════════════════╣\n");
         
-        stats.append(String.format("║ Matchs joués : %-43s║\n", matchsTournoiJoues));
-        stats.append(String.format("║ Victoires : %-46s║\n", matchsTournoiGagnes));
-        stats.append(String.format("║ Défaites : %-47s║\n", matchsTournoiPerdus));
-        stats.append(String.format("║ Points de tournoi : %-38s║\n", pointsTournoi));
+        stats.append(String.format("║ Matches played : %-40s║\n", matchsTournoiJoues));
+        stats.append(String.format("║ Wins : %-50s║\n", matchsTournoiGagnes));
+        stats.append(String.format("║ Losses : %-48s║\n", matchsTournoiPerdus));
+        stats.append(String.format("║ Tournament points : %-37s║\n", pointsTournoi));
         
         if (matchsTournoiJoues > 0) {
             double tauxVictoire = (double) matchsTournoiGagnes / matchsTournoiJoues * 100;
-            stats.append(String.format("║ Taux de victoire : %-39s║\n", 
+            stats.append(String.format("║ Win rate : %-46s║\n", 
                                        String.format("%.1f%%", tauxVictoire)));
         }
         
@@ -187,9 +225,9 @@ public class Client extends Human implements JoueurBelote {
         if (destinataire != null && genre != null) {
             if (this.niveauAlcoolemie > 0.8) {
                 if ("homme".equalsIgnoreCase(genre) && destinataire instanceof Serveuse) {
-                    message = message + " ma jolie !";
+                    message = message + ", gorgeous!";
                 } else if ("femme".equalsIgnoreCase(genre) && destinataire instanceof Serveur) {
-                    message = message + " mon beau !";
+                    message = message + ", handsome!";
                 }
             }
         }
